@@ -1,5 +1,4 @@
 import { Outlet } from "react-router-dom";
-import Navbar from "@/components/Navbar";
 
 const Footer = () => {
   return (
@@ -12,7 +11,6 @@ const Footer = () => {
 const Root = () => {
   return (
     <div className="bg-[#08081d]">
-      <Navbar />
       <div className="min-h-[80vh] mx-10 my-4">
         <Outlet />
       </div>

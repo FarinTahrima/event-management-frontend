@@ -11,8 +11,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/shadcn/ui/alert-dialog";
-import { toast } from "./shadcn/ui/use-toast";
+} from "@/components/ui/alert-dialog";
+import { toast } from "./ui/use-toast";
 
 const DeleteAccountButton = () => {
   const { setIsLoggedIn, user, setUser } = useAppContext();

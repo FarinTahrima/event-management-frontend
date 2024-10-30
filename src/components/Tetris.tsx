@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Button } from "@/components/shadcn/ui/button";
+import { Button } from "@/components//ui/button";
 
 const BOARD_WIDTH = 10;
 const BOARD_HEIGHT = 20;

@@ -1,5 +1,5 @@
 import React, { Dispatch, SetStateAction, useContext, useState } from "react";
-import { Toaster } from "@/components/shadcn/ui/toaster";
+import { Toaster } from "@/components//ui/toaster";
 import { User } from "@/utils/types";
 
 type AppContext = {

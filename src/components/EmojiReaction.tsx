@@ -1,8 +1,8 @@
 import { useAppContext } from "@/contexts/AppContext";
 import { sendEmoji } from "@/utils/messaging-client";
 import { useState } from "react";
-import { toast } from "./shadcn/ui/use-toast";
-import { Switch } from "./shadcn/ui/switch";
+import { toast } from "./ui/use-toast";
+import { Switch } from "./ui/switch";
 import { uuid } from "@/utils/emoji-methods";
 import { EMOJI_ClICK_COOLDOWN } from "@/utils/constants";
 export interface EmojiReaction {}

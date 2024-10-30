@@ -1,6 +1,6 @@
 import { sendMessageToChat } from "@/utils/messaging-client";
-import { Button } from "./shadcn/ui/button";
-import { Input } from "./shadcn/ui/input";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
 import { useAppContext } from "@/contexts/AppContext";
 
 interface ChatInputProps {

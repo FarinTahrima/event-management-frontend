@@ -3,17 +3,6 @@ import { RegisterFormData } from "../pages/host/HostRegisterPage.tsx";
 
 import axios from "axios";
 import { User } from "@/utils/types";
-import { UpdateFormData } from "../pages/UpdateProfilePage";
-import { PollRequestData } from "@/components/PollForm";
-import { PollResponse } from "@/pages/WatchPartyPage";
-import { WatchPartyResponse } from "@/pages/PollResultPage";
-import { UpdateWatchPartyForm, UpdateWatchPartyPasswordForm } from "@/pages/ManageWatchPartyPage";
-import { PollOptionResponseData, PollResponseData } from "@/pages/CreatePollPage";
-import { UpdatePollForm } from "@/pages/ManagePollPage";
-import {
-  WatchPartyFormData,
-  WatchPartyResponseData,
-} from "@/pages/CreateWatchPartyPage";
 
 
 const API_BASE_URL = "http://localhost:8080";
@@ -82,45 +71,6 @@ export const getFullAccountInfo = async (
   }
 };
 
-// export const update = async (formData: UpdateFormData) => {
-//   // const { user } = useAppContext();
-//   // const user = appContext.user;
-//   const response = await axios
-//     .put(
-//       `${API_BASE_URL}/account/api/update`,
-//       {
-//         id: formData.id,
-//         username: formData.username,
-//         email: formData.email,
-//         password: formData.password,
-//         confirmPassword: formData.confirmPassword,
-//       },
-//       {
-//         headers: {
-//           "Content-Type": "application/json",
-//         },
-//         withCredentials: true,
-//       }
-//     )
-//     .then((response) => {
-//       console.log(response.data);
-//     })
-//     .catch((error) => {
-//       // Error handling code remains the same
-//       throw new Error(error);
-//     });
-// };
-
-export const deleteUser = async (id: number) => {
-  const response = await axios
-    .delete(`${API_BASE_URL}/account/api/delete/${id}`)
-    .then((response) => {
-      console.log(response.data);
-    })
-    .catch((error) => {
-      throw new Error(error);
-    });
-};
 
 export const getChatMessagesByRoomID = async (roomID: string) => {
   const data = await axios
@@ -240,4 +190,8 @@ export const sendChatMessage = async (userInput: string) => {
     throw error;
   }
 };
+
+export function deleteUser(id: number) {
+  throw new Error("Function not implemented.");
+}
 

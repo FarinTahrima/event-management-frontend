@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import Webcam from 'react-webcam';
 import { useReactMediaRecorder } from 'react-media-recorder';
-import { Button } from "@/components/shadcn/ui/button";
+import { Button } from "@/components//ui/button";
 import { Video, StopCircle, Save } from 'lucide-react';
 
 const VideoRecorder: React.FC = () => {

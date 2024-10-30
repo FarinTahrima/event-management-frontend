@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Button } from "@/components/shadcn/ui/button";
+import { Button } from "@/components//ui/button";
 
 interface Ball {
   x: number;

@@ -1,6 +1,6 @@
 import { useAppContext } from "@/contexts/AppContext";
-import { toast } from "./shadcn/ui/use-toast";
-import { Button } from "./shadcn/ui/button";
+import { toast } from "./ui/use-toast";
+import { Button } from "./ui/button";
 import { useNavigate } from "react-router-dom";
 
 const LogoutButton = () => {

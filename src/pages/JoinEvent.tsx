@@ -1,5 +1,5 @@
-import { Button } from "@/components/shadcn/ui/button";
-import { toast } from "@/components/shadcn/ui/use-toast";
+import { Button } from "@/components//ui/button";
+import { toast } from "@/components//ui/use-toast";
 import { useAppContext } from "@/contexts/AppContext";
 import { set, useForm } from "react-hook-form";
 import { useMutation } from "react-query";

@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Button } from "@/components/shadcn/ui/button";
+import { Button } from "@/components//ui/button";
 import { useAppContext } from "@/contexts/AppContext";
 import { User } from "@/utils/types";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/shadcn/ui/dialog";
-import { Input } from "@/components/shadcn/ui/input";
-import { toast } from "@/components/shadcn/ui/use-toast";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components//ui/dialog";
+import { Input } from "@/components//ui/input";
+import { toast } from "@/components//ui/use-toast";
 import { useNavigate } from 'react-router-dom';
 
 const WordleLoginButton: React.FC = () => {

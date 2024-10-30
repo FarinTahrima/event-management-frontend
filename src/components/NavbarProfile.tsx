@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import profileIcon from "/profileicon.svg";
 import profileIconBg from "/profileiconbg.svg";
 import { useAppContext } from "@/contexts/AppContext";
-import { Button } from "@/components/shadcn/ui/button.tsx";
+import { Button } from "@/components/ui/button.tsx";
 import LogoutButton from "./LogoutButton";
 const NavbarProfile = () => {
   const [isMenuOpen, setIsProfileMenuOpen] = useState(false);

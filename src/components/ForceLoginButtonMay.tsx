@@ -1,5 +1,5 @@
 import { useAppContext } from "@/contexts/AppContext";
-import { Button } from "./shadcn/ui/button";
+import { Button } from "./ui/button";
 import { User } from "@/utils/types";
 import { useNavigate } from "react-router-dom";
 
