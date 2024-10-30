@@ -1,5 +1,5 @@
-import { Button } from "@/components/shadcn/ui/button";
-import { toast } from "@/components/shadcn/ui/use-toast";
+import { Button } from "@/components/ui/button";
+import { toast } from "@/components/ui/use-toast";
 import logo from "/eventhub-logo.png";
 import { useState } from "react";
 import { useAppContext } from "@/contexts/AppContext";
