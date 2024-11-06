@@ -17,6 +17,11 @@ type JoinEventFormData = {
   displayName: string;
 };
 
+interface JoinEventResponse {
+  user: User;
+  eventStatus: 'not_started' | 'started';
+}
+
 const LandingPage = () => {
   const [optionSelected, setOptionSelected] = useState<string | null>(null);
   const [transitioning, setTransitioning] = useState(false);
@@ -35,7 +40,7 @@ const LandingPage = () => {
   const buttonTextFormat = "text-3xl mx-8 px-8 py-6 font-alatsi";
   const TRANSITION_DURATION = 300;
 
-  const joinEventMutation = useMutation<User, Error, JoinEventFormData>(
+  const joinEventMutation = useMutation<JoinEventResponse, Error, JoinEventFormData>(
     async (data) => {
       const response = await fetch('/api/join-event', {
         method: 'POST',
@@ -44,19 +49,27 @@ const LandingPage = () => {
         },
         body: JSON.stringify(data),
       });
+      
       if (!response.ok) {
-        throw new Error('Failed to join event');
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to join event');
       }
+      
       return response.json();
     },
     {
-      onSuccess: () => {
+      onSuccess: (data) => {
         setIsLoading(false);
         toast({
           title: "Success",
           description: "Joined event successfully!",
         });
-        navigate("/stream");
+        
+        if (data.eventStatus === 'started') {
+          navigate("/viewer");
+        } else {
+          navigate("/waiting");
+        }
       },
       onError: (error: Error) => {
         setIsLoading(false);
