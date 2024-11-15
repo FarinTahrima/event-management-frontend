@@ -1,5 +1,5 @@
 import React from 'react';
-import { Image, FileVideo, Radio, BarChart2, Box, Bird } from 'lucide-react';
+import { Image, FileVideo, Radio, BarChart2, Box, Bird, PenSquare } from 'lucide-react';
 import VideoRecorder from '../pages/VideoRecorder';
 import ViewOnlyModelViewer from '@/pages/ModelViewer/ViewOnlyModelViewer';
 import { PollResponse } from '@/pages/host/HostCreatePoll';
@@ -107,5 +107,12 @@ export const Components: ComponentItem[] = [
     content: "Interactive Q&A",
     link: "/pigeon",
     htmlContent: <SelectedQuestion />,
+  },
+  {
+    id: "7",
+    type: "whiteboard",
+    title: "White Board",
+    icon: <PenSquare className="w-6 h-6" />,
+    link: "/whiteboard",
   },
 ];

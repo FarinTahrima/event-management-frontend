@@ -84,7 +84,6 @@ const EventPage: React.FC = () => {
       onReceived: (action: ModuleAction) => {
         console.log("Received ModuleAction:", action);
         if (action.TYPE == "poll_vote" && action.CONTENT) {
-          // to send the vote action triggered by viewer
           setVoteAction(action);
         }
 
@@ -218,20 +217,6 @@ const EventPage: React.FC = () => {
     });
   };
 
-  const handleSlides = (index: string) => {
-    const selectedSlide = components.filter(
-      (component) => index == component.id
-    );
-    setCurrentComponent(selectedSlide[0]);
-    sendModuleAction({
-      ID: selectedSlide[0].id,
-      TYPE: selectedSlide[0].type,
-      SESSION_ID: roomId ?? "",
-      SENDER: user?.username ?? "",
-      TIMESTAMP: new Date().toISOString(),
-    });
-  };
-
   return (
     <div className="flex flex-col h-screen bg-gray-900 text-white">
       {/* Top Navigation Bar */}
@@ -256,7 +241,7 @@ const EventPage: React.FC = () => {
           </div>
         </div>
       </div>
-
+  
       {/* Main Content */}
       <DragDropContext onDragEnd={handleDragEnd}>
         <div className="flex flex-1 overflow-hidden">
@@ -276,36 +261,28 @@ const EventPage: React.FC = () => {
                       <h2 className="text-xl font-semibold mb-4 text-white">
                         {currentComponent.title}
                       </h2>
-                      {currentComponent.type === "slide" &&
-                        currentComponent.images && (
-                          <div className="w-full h-full">
-                            <SlideShow
-                              images={currentComponent.images}
-                              isHost={true}
-                              currentIndex={currentSlideIndex}
-                              onSlideChange={(index) => {
-                                setCurrentSlideIndex(index);
-                                // Broadcast slide change to viewers
-                                sendModuleAction({
-                                  ID: currentComponent.id,
-                                  TYPE: "slide_change",
-                                  SESSION_ID: roomId ?? "",
-                                  SENDER: user?.username ?? "",
-                                  TIMESTAMP: new Date().toISOString(),
-                                  CONTENT: JSON.stringify({
-                                    slideIndex: index,
-                                  }),
-                                });
-                              }}
-                            />
-                          </div>
-                        )}
-                      {currentComponent.htmlContent &&
-                        !currentComponent.imageUrl && (
-                          <div className="max-w-full max-h-full overflow-auto">
-                            {currentComponent.htmlContent}
-                          </div>
-                        )}
+                      {currentComponent.type === "slide" && currentComponent.images && (
+                        <div className="w-full h-full">
+                          <SlideShow
+                            images={currentComponent.images}
+                            isHost={true}
+                            currentIndex={currentSlideIndex}
+                            onSlideChange={(index) => {
+                              setCurrentSlideIndex(index);
+                              sendModuleAction({
+                                ID: currentComponent.id,
+                                TYPE: "slide_change",
+                                SESSION_ID: roomId ?? "",
+                                SENDER: user?.username ?? "",
+                                TIMESTAMP: new Date().toISOString(),
+                                CONTENT: JSON.stringify({
+                                  slideIndex: index,
+                                }),
+                              });
+                            }}
+                          />
+                        </div>
+                      )}
                       {currentComponent.type === "video" && (
                         <div className="flex justify-center items-center w-full h-full">
                           <VideoJSSynced
@@ -325,17 +302,13 @@ const EventPage: React.FC = () => {
                           isHost={true}
                           roomId={roomId}
                           voteAction={voteAction}
-                          changeToResultViewForViewers={
-                            changePollToResultViewForViewers
-                          }
-                          changeToPollViewForViewers={
-                            changeResultToPollViewForViewers
-                          }
+                          changeToResultViewForViewers={changePollToResultViewForViewers}
+                          changeToPollViewForViewers={changeResultToPollViewForViewers}
                         />
                       )}
-                      <p className="text-white mb-4">
-                        {currentComponent.content}
-                      </p>
+                      {currentComponent.content && (
+                        <p className="text-white mb-4">{currentComponent.content}</p>
+                      )}
                     </div>
                   ) : (
                     <div
@@ -353,6 +326,7 @@ const EventPage: React.FC = () => {
               )}
             </Droppable>
           </div>
+  
           {/* Right Sidebar */}
           <div className="flex-1 bg-gray-800 shadow-lg flex flex-col">
             <div className="h-[50%] p-2 overflow-hidden">
@@ -396,18 +370,22 @@ const EventPage: React.FC = () => {
                       ref={provided.innerRef}
                       className="space-y-2"
                     >
-                      {components.map((item, index) => (
-                        <Draggable
-                          key={item.id}
-                          draggableId={item.id}
-                          index={index}
-                        >
+                    {components.map((item, index) => (
+                      <Draggable
+                        key={item.id}
+                        draggableId={item.id}
+                        index={index}
+                      >
                           {(provided, snapshot) => (
                             <Card
                               ref={provided.innerRef}
                               {...provided.draggableProps}
-                              className={`p-2 cursor-pointer bg-gray-700 hover:bg-gray-600 relative ${
+                              className={`p-2 cursor-pointer relative ${
                                 snapshot.isDragging ? "opacity-50" : ""
+                              } ${
+                                currentComponent?.id === item.id 
+                                  ? "bg-blue-600 hover:bg-blue-700 border-2 border-blue-400" 
+                                  : "bg-gray-700 hover:bg-gray-600"
                               }`}
                               onClick={() => handleComponentClick(item)}
                             >
@@ -423,6 +401,11 @@ const EventPage: React.FC = () => {
                                   <h3 className="font-medium text-white">
                                     {item.title}
                                   </h3>
+                                  {currentComponent?.id === item.id && (
+                                    <span className="text-xs text-blue-200">
+                                      Currently Active
+                                    </span>
+                                  )}
                                 </div>
                                 <Button
                                   size="sm"
@@ -467,7 +450,7 @@ const EventPage: React.FC = () => {
         </div>
       </DragDropContext>
     </div>
-  );
+  );  
 };
 
 export default EventPage;

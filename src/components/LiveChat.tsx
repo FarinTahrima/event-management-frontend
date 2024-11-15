@@ -4,6 +4,7 @@ import { LoadingSpinner } from "./LoadingSpinner";
 import ChatHistory from "./ChatHistory";
 import EmojiOverlay from "./EmojiOverlay";
 import EmojiReaction from "./EmojiReaction";
+import { MessageSquare } from "lucide-react";
 import {
   initWebSocketConnection,
   getPastMessages,
@@ -17,10 +18,6 @@ export interface Message {
   timeStamp: Date;
   type: string;
 }
-
-// interface LiveChatProps {
-//   roomID: string;
-// }
 
 const LiveChat = () => {
   const [messages, setMessages] = useState<Message[]>([]); // messages state
@@ -64,8 +61,9 @@ const LiveChat = () => {
     <div className="px-2 flex flex-col min-h-96 min-w-80 bg-[#161616]">
       {/* Component title and icons */}
       <div className="flex flex-row flex-wrap justify-between p-2 pt-4 border border-0 border-b-2">
-        <div className="flex items-center">
-          <h2 className="font-alatsi text-stone-50 text-lg ">Live Chat</h2>
+        <div className="flex items-center gap-2">
+          <MessageSquare className="w-5 h-5 text-stone-50" />
+          <h2 className="font-alatsi text-stone-50 text-lg">Live Chat</h2>
         </div>
       </div>
 
