@@ -21,7 +21,7 @@ const VideoRecorder: React.FC<VideoRecorderProps> = ({viewOnly}: VideoRecorderPr
   const [isMLActive, setIsMLActive] = useState(false);
   const [mlMode, setMlMode] = useState<'expression' | 'age-gender'>('expression');
   const [mlResult, setMlResult] = useState<string | null>(null);
-
+  const [detectionInterval] = useState(500);
   const { status, startRecording, stopRecording } = useReactMediaRecorder({
     video: true,
     audio: true,
@@ -30,10 +30,8 @@ const VideoRecorder: React.FC<VideoRecorderProps> = ({viewOnly}: VideoRecorderPr
       setRecordingDuration(0);
     },
   });
-
-  const handleBack = () => {
-    window.history.back();
-  };
+  const isProcessing = useRef(false);
+  const handleBack = () => {window.history.back();};
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -69,49 +67,55 @@ const VideoRecorder: React.FC<VideoRecorderProps> = ({viewOnly}: VideoRecorderPr
 
   const runMLDetection = async () => {
     if (!webcamRef.current || !isMLActive || !canvasRef.current) return;
-
+  
     const video = webcamRef.current.video;
     const canvas = canvasRef.current;
-    if (!video) return;
-
-    const displaySize = { width: video.videoWidth, height: video.videoHeight };
-    faceapi.matchDimensions(canvas, displaySize);
-
-    const detection = await faceapi
-      .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
-      .withFaceLandmarks()
-      .withFaceExpressions()
-      .withAgeAndGender();
-
-    if (detection) {
-      const resizedDetection = faceapi.resizeResults(detection, displaySize);
-      
-      canvas.getContext('2d')?.clearRect(0, 0, canvas.width, canvas.height);
-      faceapi.draw.drawDetections(canvas, resizedDetection);
-
-      if (mlMode === 'expression') {
-        const expressions = detection.expressions;
-        const topExpression = Object.entries(expressions).reduce((a, b) => a[1] > b[1] ? a : b);
-        setMlResult(`Expression: ${topExpression[0]} (${(topExpression[1] * 100).toFixed(2)}%)`);
+    if (!video || video.readyState !== video.HAVE_ENOUGH_DATA) return;
+    if (isProcessing.current) return;
+    isProcessing.current = true;
+  
+    try {
+      const displaySize = { width: video.videoWidth, height: video.videoHeight };
+      faceapi.matchDimensions(canvas, displaySize);
+  
+      const detection = await faceapi
+        .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
+        .withFaceLandmarks()
+        .withFaceExpressions()
+        .withAgeAndGender();
+  
+      if (detection) {
+        const resizedDetection = faceapi.resizeResults(detection, displaySize);
+        
+        canvas.getContext('2d')?.clearRect(0, 0, canvas.width, canvas.height);
+        faceapi.draw.drawDetections(canvas, resizedDetection);
+  
+        if (mlMode === 'expression') {
+          const expressions = detection.expressions;
+          const topExpression = Object.entries(expressions).reduce((a, b) => a[1] > b[1] ? a : b);
+          setMlResult(`Expression: ${topExpression[0]} (${(topExpression[1] * 100).toFixed(2)}%)`);
+        } else {
+          setMlResult(`Age: ${Math.round(detection.age)}, Gender: ${detection.gender}`);
+        }
       } else {
-        setMlResult(`Age: ${Math.round(detection.age)}, Gender: ${detection.gender}`);
+        setMlResult('No face detected');
+        canvas.getContext('2d')?.clearRect(0, 0, canvas.width, canvas.height);
       }
-    } else {
-      setMlResult('No face detected');
-      canvas.getContext('2d')?.clearRect(0, 0, canvas.width, canvas.height);
+    } finally {
+      isProcessing.current = false;
     }
-  };
+  };  
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (isMLActive) {
-      interval = setInterval(runMLDetection, 100);
+      interval = setInterval(runMLDetection, detectionInterval);
     } else if (canvasRef.current) {
       const canvas = canvasRef.current;
       canvas.getContext('2d')?.clearRect(0, 0, canvas.width, canvas.height);
     }
     return () => clearInterval(interval);
-  }, [isMLActive, mlMode]);
+  }, [isMLActive, mlMode, detectionInterval]);
 
   const showNotification = (message: string) => {
     setNotification(message);
