@@ -396,18 +396,22 @@ const EventPage: React.FC = () => {
                       ref={provided.innerRef}
                       className="space-y-2"
                     >
-                      {components.map((item, index) => (
-                        <Draggable
-                          key={item.id}
-                          draggableId={item.id}
-                          index={index}
-                        >
+                    {components.map((item, index) => (
+                      <Draggable
+                        key={item.id}
+                        draggableId={item.id}
+                        index={index}
+                      >
                           {(provided, snapshot) => (
                             <Card
                               ref={provided.innerRef}
                               {...provided.draggableProps}
-                              className={`p-2 cursor-pointer bg-gray-700 hover:bg-gray-600 relative ${
+                              className={`p-2 cursor-pointer relative ${
                                 snapshot.isDragging ? "opacity-50" : ""
+                              } ${
+                                currentComponent?.id === item.id 
+                                  ? "bg-blue-600 hover:bg-blue-700 border-2 border-blue-400" 
+                                  : "bg-gray-700 hover:bg-gray-600"
                               }`}
                               onClick={() => handleComponentClick(item)}
                             >
@@ -423,6 +427,11 @@ const EventPage: React.FC = () => {
                                   <h3 className="font-medium text-white">
                                     {item.title}
                                   </h3>
+                                  {currentComponent?.id === item.id && (
+                                    <span className="text-xs text-blue-200">
+                                      Currently Active
+                                    </span>
+                                  )}
                                 </div>
                                 <Button
                                   size="sm"
