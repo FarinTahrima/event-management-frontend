@@ -14,7 +14,6 @@ import { useEffect, useState } from "react";
 import { useAppContext } from "@/contexts/AppContext";
 import PollComponent from "./components/PollComponent";
 import QuestionComponent from "./components/QuestionComponent";
-import SharedWhiteboard from "./components/SharedWhiteboard";
 
 interface ComponentItem {
   id: string;
@@ -42,8 +41,7 @@ export interface StatusMessage {
 
 const ViewerPage: React.FC = () => {
   const [poll, setPoll] = useState(Poll);
-  const [currentComponent, setCurrentComponent] =
-    useState<ComponentItem | null>(null);
+  const [currentComponent, setCurrentComponent] = useState<ComponentItem | null>(null);
   const [streamStatus, setStreamStatus] = useState<StreamStatus>({
     isLive: false,
     viewerCount: 0,
@@ -58,12 +56,6 @@ const ViewerPage: React.FC = () => {
       roomID: roomID,
       onReceived: (action: ModuleAction) => {
         console.log("Received ModuleAction:", action);
-
-        if (action.TYPE === "draw_action" && action.CONTENT) {
-          const drawAction = JSON.parse(action.CONTENT);
-          if (currentComponent?.type === "whiteboard") {
-          }
-        }
 
         if (action.TYPE == "poll_result" && action.CONTENT) {
           setPoll(JSON.parse(action.CONTENT));
@@ -158,17 +150,6 @@ const ViewerPage: React.FC = () => {
     });
   };
 
-  const renderComponent = (component: ComponentItem) => {
-    if (component.type === "whiteboard") {
-      return (
-        <div className="w-full h-full">
-          <SharedWhiteboard isHost={false} roomId={roomId ?? ""} />
-        </div>
-      );
-    }
-    return component.htmlContent;
-  };
-
   return (
     <div className="flex flex-col h-screen bg-gray-900 text-white">
       {/* Stream Status Bar */}
@@ -185,19 +166,15 @@ const ViewerPage: React.FC = () => {
           <Card className="h-full flex items-center justify-center bg-gray-800">
             {currentComponent ? (
               <div className="text-center p-6 w-full h-full">
-                {currentComponent.type === "whiteboard" ? (
-                  <div className="w-full h-full">
-                    <SharedWhiteboard isHost={false} roomId={roomId ?? ""} />
-                  </div>
-                ) : currentComponent.imageUrl &&
+                {currentComponent.imageUrl &&
                   currentComponent.type !== "slide" &&
-                  !currentComponent.htmlContent ? (
+                  !currentComponent.htmlContent && (
                   <img
                     src={currentComponent.imageUrl}
                     alt={currentComponent.title}
                     className="mx-auto mb-4 rounded-lg shadow-md"
                   />
-                ) : null}
+                )}
                 {currentComponent.type === "slide" && (
                   <div className="carousel w-full">
                     <img
@@ -260,7 +237,7 @@ const ViewerPage: React.FC = () => {
       </div>
       <Chatbot />
     </div>
-  );  
+  );
 };
 
 export default ViewerPage;

@@ -30,7 +30,6 @@ import VideoJSSynced from "@/components/VideoJSSynced";
 import { Components, ComponentItem, Poll } from "@/data/componentData";
 import PollComponent from "./components/PollComponent";
 import SlideShow from "./components/SlideShow";
-import SharedWhiteboard from "./components/SharedWhiteboard";
 
 interface StreamStatus {
   isLive: boolean;
@@ -86,11 +85,6 @@ const EventPage: React.FC = () => {
         console.log("Received ModuleAction:", action);
         if (action.TYPE == "poll_vote" && action.CONTENT) {
           setVoteAction(action);
-        }
-        if (action.TYPE === "draw_action" && action.CONTENT) {
-          const drawAction = JSON.parse(action.CONTENT);
-          if (currentComponent?.type === "whiteboard") {
-          }
         }
 
         const component = Components.find(
@@ -223,17 +217,6 @@ const EventPage: React.FC = () => {
     });
   };
 
-  const renderComponent = (component: ComponentItem) => {
-    if (component.type === "whiteboard") {
-      return (
-        <div className="w-full h-full">
-          <SharedWhiteboard isHost={true} roomId={roomId ?? ""} />
-        </div>
-      );
-    }
-    return component.htmlContent;
-  };
-
   return (
     <div className="flex flex-col h-screen bg-gray-900 text-white">
       {/* Top Navigation Bar */}
@@ -300,15 +283,6 @@ const EventPage: React.FC = () => {
                           />
                         </div>
                       )}
-                      {currentComponent.type === "whiteboard" ? (
-                        <div className="w-full h-full flex-1">
-                          <SharedWhiteboard isHost={true} roomId={roomId ?? ""} />
-                        </div>
-                      ) : currentComponent.htmlContent && !currentComponent.imageUrl ? (
-                        <div className="max-w-full max-h-full overflow-auto">
-                          {currentComponent.htmlContent}
-                        </div>
-                      ) : null}
                       {currentComponent.type === "video" && (
                         <div className="flex justify-center items-center w-full h-full">
                           <VideoJSSynced
