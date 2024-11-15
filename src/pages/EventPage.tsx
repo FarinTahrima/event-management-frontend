@@ -30,6 +30,7 @@ import VideoJSSynced from "@/components/VideoJSSynced";
 import { Components, ComponentItem, Poll } from "@/data/componentData";
 import PollComponent from "./components/PollComponent";
 import SlideShow from "./components/SlideShow";
+import SharedWhiteboard from "./components/SharedWhiteboard";
 
 interface StreamStatus {
   isLive: boolean;
@@ -84,8 +85,12 @@ const EventPage: React.FC = () => {
       onReceived: (action: ModuleAction) => {
         console.log("Received ModuleAction:", action);
         if (action.TYPE == "poll_vote" && action.CONTENT) {
-          // to send the vote action triggered by viewer
           setVoteAction(action);
+        }
+        if (action.TYPE === "draw_action" && action.CONTENT) {
+          const drawAction = JSON.parse(action.CONTENT);
+          if (currentComponent?.type === "whiteboard") {
+          }
         }
 
         const component = Components.find(
@@ -218,18 +223,15 @@ const EventPage: React.FC = () => {
     });
   };
 
-  const handleSlides = (index: string) => {
-    const selectedSlide = components.filter(
-      (component) => index == component.id
-    );
-    setCurrentComponent(selectedSlide[0]);
-    sendModuleAction({
-      ID: selectedSlide[0].id,
-      TYPE: selectedSlide[0].type,
-      SESSION_ID: roomId ?? "",
-      SENDER: user?.username ?? "",
-      TIMESTAMP: new Date().toISOString(),
-    });
+  const renderComponent = (component: ComponentItem) => {
+    if (component.type === "whiteboard") {
+      return (
+        <div className="w-full h-full">
+          <SharedWhiteboard isHost={true} roomId={roomId ?? ""} />
+        </div>
+      );
+    }
+    return component.htmlContent;
   };
 
   return (
@@ -256,7 +258,7 @@ const EventPage: React.FC = () => {
           </div>
         </div>
       </div>
-
+  
       {/* Main Content */}
       <DragDropContext onDragEnd={handleDragEnd}>
         <div className="flex flex-1 overflow-hidden">
@@ -276,36 +278,37 @@ const EventPage: React.FC = () => {
                       <h2 className="text-xl font-semibold mb-4 text-white">
                         {currentComponent.title}
                       </h2>
-                      {currentComponent.type === "slide" &&
-                        currentComponent.images && (
-                          <div className="w-full h-full">
-                            <SlideShow
-                              images={currentComponent.images}
-                              isHost={true}
-                              currentIndex={currentSlideIndex}
-                              onSlideChange={(index) => {
-                                setCurrentSlideIndex(index);
-                                // Broadcast slide change to viewers
-                                sendModuleAction({
-                                  ID: currentComponent.id,
-                                  TYPE: "slide_change",
-                                  SESSION_ID: roomId ?? "",
-                                  SENDER: user?.username ?? "",
-                                  TIMESTAMP: new Date().toISOString(),
-                                  CONTENT: JSON.stringify({
-                                    slideIndex: index,
-                                  }),
-                                });
-                              }}
-                            />
-                          </div>
-                        )}
-                      {currentComponent.htmlContent &&
-                        !currentComponent.imageUrl && (
-                          <div className="max-w-full max-h-full overflow-auto">
-                            {currentComponent.htmlContent}
-                          </div>
-                        )}
+                      {currentComponent.type === "slide" && currentComponent.images && (
+                        <div className="w-full h-full">
+                          <SlideShow
+                            images={currentComponent.images}
+                            isHost={true}
+                            currentIndex={currentSlideIndex}
+                            onSlideChange={(index) => {
+                              setCurrentSlideIndex(index);
+                              sendModuleAction({
+                                ID: currentComponent.id,
+                                TYPE: "slide_change",
+                                SESSION_ID: roomId ?? "",
+                                SENDER: user?.username ?? "",
+                                TIMESTAMP: new Date().toISOString(),
+                                CONTENT: JSON.stringify({
+                                  slideIndex: index,
+                                }),
+                              });
+                            }}
+                          />
+                        </div>
+                      )}
+                      {currentComponent.type === "whiteboard" ? (
+                        <div className="w-full h-full flex-1">
+                          <SharedWhiteboard isHost={true} roomId={roomId ?? ""} />
+                        </div>
+                      ) : currentComponent.htmlContent && !currentComponent.imageUrl ? (
+                        <div className="max-w-full max-h-full overflow-auto">
+                          {currentComponent.htmlContent}
+                        </div>
+                      ) : null}
                       {currentComponent.type === "video" && (
                         <div className="flex justify-center items-center w-full h-full">
                           <VideoJSSynced
@@ -325,17 +328,13 @@ const EventPage: React.FC = () => {
                           isHost={true}
                           roomId={roomId}
                           voteAction={voteAction}
-                          changeToResultViewForViewers={
-                            changePollToResultViewForViewers
-                          }
-                          changeToPollViewForViewers={
-                            changeResultToPollViewForViewers
-                          }
+                          changeToResultViewForViewers={changePollToResultViewForViewers}
+                          changeToPollViewForViewers={changeResultToPollViewForViewers}
                         />
                       )}
-                      <p className="text-white mb-4">
-                        {currentComponent.content}
-                      </p>
+                      {currentComponent.content && (
+                        <p className="text-white mb-4">{currentComponent.content}</p>
+                      )}
                     </div>
                   ) : (
                     <div
@@ -353,6 +352,7 @@ const EventPage: React.FC = () => {
               )}
             </Droppable>
           </div>
+  
           {/* Right Sidebar */}
           <div className="flex-1 bg-gray-800 shadow-lg flex flex-col">
             <div className="h-[50%] p-2 overflow-hidden">
@@ -467,7 +467,7 @@ const EventPage: React.FC = () => {
         </div>
       </DragDropContext>
     </div>
-  );
+  );  
 };
 
 export default EventPage;
