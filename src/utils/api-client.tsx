@@ -5,10 +5,13 @@ import { User } from "@/utils/types";
 import { CreateEventFormData } from "@/pages/host/HostCreateEvent.tsx";
 import { StatusMessage } from "@/pages/ViewerPage.tsx";
 import { PollRequestData } from "@/components/PollForm.tsx";
-import { PollResponse, PollResponseData } from "@/pages/host/HostCreatePoll.tsx";
+import {
+  PollResponse,
+  PollResponseData,
+} from "@/pages/host/HostCreatePoll.tsx";
 
 const API_BASE_URL = "http://localhost:8080";
-const EXPRESS_BASE_URL = 'http://localhost:3000';
+const EXPRESS_BASE_URL = "http://localhost:3000";
 
 export const register = async (formData: RegisterFormData) => {
   const response = await axios
@@ -53,8 +56,9 @@ export const login = async (formData: LoginFormData): Promise<User> => {
       // Error handling code remains the same
       throw new Error(error.message);
     });
-  const fullUserInfo = await getFullAccountInfo(response.data.id);
-  return { ...response.data, ...fullUserInfo };
+  // const fullUserInfo = await getFullAccountInfo(response.data.id);
+  // return { ...response.data, ...fullUserInfo };
+  return { ...response.data };
 };
 
 export const getFullAccountInfo = async (
@@ -200,11 +204,13 @@ export const sendChatMessage = async (userInput: string) => {
   } catch (error) {
     console.error("Error in sendChatMessage:", error);
     if (axios.isAxiosError(error)) {
-      console.error('Axios error:', error.message);
-      console.error('Error response:', error.response);
-      console.error('Error request:', error.request);
+      console.error("Axios error:", error.message);
+      console.error("Error response:", error.response);
+      console.error("Error request:", error.request);
     }
-    throw new Error('Failed to send message. Please check your network connection and try again.');
+    throw new Error(
+      "Failed to send message. Please check your network connection and try again."
+    );
   }
 };
 
