@@ -4,7 +4,6 @@ import VideoRecorder from '../pages/VideoRecorder';
 import ViewOnlyModelViewer from '@/pages/ModelViewer/ViewOnlyModelViewer';
 import { PollResponse } from '@/pages/host/HostCreatePoll';
 import SelectedQuestion from '@/pages/components/SelectedQuestion';
-import SharedWhiteboard from '@/pages/components/SharedWhiteboard';
 
 export interface ComponentItem {
   id: string;
