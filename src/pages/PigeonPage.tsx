@@ -1,8 +1,9 @@
 import React from 'react';
 import { useQuestions } from '../contexts/QuestionContext';
 import { Card } from "@/components/shadcn/ui/card";
+import { Button } from "@/components/shadcn/ui/button";
 import { ScrollArea } from "@/components/shadcn/ui/scroll-area";
-import { ChevronUp, Clock } from "lucide-react";
+import { ChevronUp, Clock, Trash2, ArrowLeft } from "lucide-react";
 import { Question } from '../types/types';
 
 const SelectedQuestionDisplay: React.FC<{ question: Question | null }> = ({ question }) => {
@@ -36,13 +37,21 @@ const SelectedQuestionDisplay: React.FC<{ question: Question | null }> = ({ ques
 };
 
 const PigeonPage: React.FC = () => {
-  const { questions, handleVote, handleSelectQuestion } = useQuestions();
-  const selectedQuestion = questions.find(q => q.isSelected) || null; // Convert undefined to null
+  const { questions, handleVote, handleSelectQuestion, deleteQuestion } = useQuestions();
+  const selectedQuestion = questions.find(q => q.isSelected) || null;
 
   return (
-    <div className="flex flex-col h-screen bg-gray-900 text-white p-4">
-      <h1 className="text-2xl font-bold mb-4">Pigeon Page</h1>
-      <div className="flex flex-1 gap-4">
+    <div className="flex flex-col h-screen bg-gray-900 text-white p-4 relative">
+      <Button
+        onClick={() => window.history.back()}
+        className="absolute top-4 left-4 bg-white text-black hover:bg-gray-200 shadow-lg rounded-lg px-4 py-2 transition-all duration-200 border border-gray-200 z-10"
+      >
+        <ArrowLeft className="w-5 h-5 mr-2" />
+        Back
+      </Button>
+      
+      <h1 className="text-2xl font-bold mb-4 text-center pt-4">Pigeon Page</h1>
+      <div className="flex flex-1 gap-4 mt-8">
         {/* Left side - Selected Question */}
         <div className="w-1/2">
           <SelectedQuestionDisplay question={selectedQuestion} />
@@ -82,6 +91,15 @@ const PigeonPage: React.FC = () => {
                         {new Date(question.timestamp).toLocaleTimeString()}
                       </p>
                     </div>
+                    <button
+                      className="p-2 rounded bg-red-600 hover:bg-red-700 transition-colors duration-200"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteQuestion(question.id);
+                      }}
+                    >
+                      <Trash2 className="h-5 w-5" />
+                    </button>
                   </div>
                 </Card>
               ))}

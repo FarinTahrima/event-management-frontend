@@ -7,6 +7,7 @@ interface QuestionContextType {
   handleVote: (questionId: string) => void;
   handleSelectQuestion: (question: Question) => void;
   addQuestion: (text: string) => void;
+  deleteQuestion: (questionId: string) => void; 
 }
 
 const QuestionContext = createContext<QuestionContextType | undefined>(undefined);
@@ -63,6 +64,10 @@ export const QuestionProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setQuestions(prev => [...prev, newQuestion]);
   };
 
+  const deleteQuestion = (questionId: string) => {
+    setQuestions(prev => prev.filter(q => q.id !== questionId));
+  };
+
   return (
     <QuestionContext.Provider 
       value={{ 
@@ -70,7 +75,8 @@ export const QuestionProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         setQuestions, 
         handleVote, 
         handleSelectQuestion,
-        addQuestion 
+        addQuestion,
+        deleteQuestion 
       }}
     >
       {children}
