@@ -23,13 +23,16 @@ import {
   ModuleConnection,
   sendModuleAction,
   sendStreamStatus,
+  sendWhiteboardAction,
   StreamConnection,
+  WhiteboardConnection,
 } from "@/utils/messaging-client";
 import { useAppContext } from "@/contexts/AppContext";
 import VideoJSSynced from "@/components/VideoJSSynced";
 import { Components, ComponentItem, Poll } from "@/data/componentData";
 import PollComponent from "./components/PollComponent";
 import SlideShow from "./components/SlideShow";
+import Whiteboard from "./components/Whiteboard";
 
 interface StreamStatus {
   isLive: boolean;
@@ -45,6 +48,15 @@ export interface ModuleAction {
   TIMESTAMP: string;
   CONTENT?: string;
   slideIndex?: number;
+}
+
+export interface WhiteboardAction {
+  SESSION_ID: string;
+  TYPE: string;
+  X?: number;
+  Y?: number;
+  COLOR?: string;
+  LINE_WIDTH?: number;
 }
 
 export const videoSource =
@@ -125,6 +137,16 @@ const EventPage: React.FC = () => {
       },
     });
     return cleanupStreamWebSocket;
+  }, [roomId]);
+
+  useEffect(() => {
+    const cleanupWebSocket = WhiteboardConnection({
+      roomID: roomId ?? "",
+      onReceived: (action: WhiteboardAction) => {
+        console.log("Received ModuleAction:", action);
+      }
+    });
+    return cleanupWebSocket;
   }, [roomId]);
 
   const handleGoLive = () => {
@@ -232,6 +254,26 @@ const EventPage: React.FC = () => {
     });
   };
 
+  const sendDrawAction = (x: number, y: number, color: string, lineWidth: number) => {
+    console.log("to send drawing to viewers");
+    sendWhiteboardAction({
+      SESSION_ID: roomId ?? "",
+      TYPE: "draw",
+      X: x,
+      Y: y,
+      COLOR: color,
+      LINE_WIDTH: lineWidth
+    })
+  };
+
+  const stopDrawAction = () => {
+    console.log("to stop drawing to viewers");
+    sendWhiteboardAction({
+      SESSION_ID: roomId ?? "",
+      TYPE: "draw_stop"
+    })
+  };
+
   return (
     <div className="flex flex-col h-screen bg-gray-900 text-white">
       {/* Top Navigation Bar */}
@@ -332,6 +374,9 @@ const EventPage: React.FC = () => {
                             changeResultToPollViewForViewers
                           }
                         />
+                      )}
+                      {currentComponent.type === "whiteboard" && roomId && (
+                        <Whiteboard isHost sendDrawAction={sendDrawAction} stopDrawAction={stopDrawAction}/>
                       )}
                       <p className="text-white mb-4">
                         {currentComponent.content}

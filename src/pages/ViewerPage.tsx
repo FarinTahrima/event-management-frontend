@@ -4,9 +4,9 @@ import LiveChat from "@/components/LiveChat";
 import Chatbot from "@/components/experimental/AIchatbot";
 import LiveIndicator from "./components/LiveIndicator";
 import RoomDetailsComponent from "./components/RoomDetail";
-import {ModuleConnection,sendModuleAction,StreamConnection} from "@/utils/messaging-client";
+import {ModuleConnection,sendModuleAction,StreamConnection, WhiteboardConnection} from "@/utils/messaging-client";
 import { useParams } from "react-router-dom";
-import { ModuleAction, videoSource } from "./EventPage";
+import { ModuleAction, videoSource, WhiteboardAction } from "./EventPage";
 import { Components, Poll } from "../data/componentData";
 import { getStreamStatus } from "@/utils/api-client";
 import VideoJSSynced from "@/components/VideoJSSynced";
@@ -14,6 +14,7 @@ import { useEffect, useState } from "react";
 import { useAppContext } from "@/contexts/AppContext";
 import PollComponent from "./components/PollComponent";
 import QuestionComponent from "./components/QuestionComponent";
+import Whiteboard, { WhiteBoardData } from "./components/Whiteboard";
 
 interface ComponentItem {
   id: string;
@@ -51,6 +52,7 @@ const ViewerPage: React.FC = () => {
   const roomID = roomId ? roomId.toString() : "";
   const { user } = useAppContext();
   const [pollMode, setPollMode] = useState<"vote" | "result">("vote");
+  const [data, setData] = useState<WhiteBoardData>();
 
   useEffect(() => {
     const cleanupWebSocket = ModuleConnection({
@@ -130,6 +132,25 @@ const ViewerPage: React.FC = () => {
     };
   }, [roomId]);
 
+  useEffect(() => {
+    const cleanupWebSocket = WhiteboardConnection({
+      roomID: roomID,
+      onReceived: (action: WhiteboardAction) => {
+        console.log("Received WhiteboardAction:", action);
+        // white board send
+        if (action.TYPE == "draw") {
+          setData({type: "draw", x: action.X, y: action.Y, color: action.COLOR, lineWidth: action.LINE_WIDTH})
+        }
+        if (action.TYPE == "draw_stop") {
+          setData({type: "draw_stop"})
+        }
+        
+      }
+    });
+
+    return cleanupWebSocket;
+  }, [roomId]);
+
   const videoJSOptions = {
     sources: [
       {
@@ -186,7 +207,9 @@ const ViewerPage: React.FC = () => {
                   </div>
                 )}
                 {currentComponent.htmlContent && !currentComponent.imageUrl && (
-                  <div>{currentComponent.htmlContent}</div>
+                   <div className="max-w-full max-h-full overflow-auto">
+                      {currentComponent.htmlContent}
+                    </div>
                 )}
                 {currentComponent.type === "video" && (
                   <VideoJSSynced
@@ -206,6 +229,9 @@ const ViewerPage: React.FC = () => {
                     pollMode={pollMode}
                     setPollMode={setPollMode}
                   />
+                )}
+                {currentComponent.type == "whiteboard" && roomId && (
+                  <Whiteboard isHost={false} data={data} setData={setData}/>
                 )}
               </div>
             ) : (
