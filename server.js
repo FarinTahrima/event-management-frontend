@@ -90,6 +90,39 @@ app.post('/generate-ai', async (req, res) => {
   }
 });
 
+async function moderateContent(text) {
+  try {
+    const moderationPrompt = `Please analyze the following content for appropriateness in a public Q&A setting. 
+    Consider factors like hate speech, explicit content, harassment, or other inappropriate content.
+    Respond with either "APPROVED" or "FLAGGED".
+    
+    Content to analyze: "${text}"`;
+    
+    const result = await model.generateContent(moderationPrompt);
+    const response = result.response.text().trim().toUpperCase();
+    
+    return response === "APPROVED" ? "approved" : "flagged";
+  } catch (error) {
+    console.error("Error in content moderation:", error);
+    throw error;
+  }
+}
+
+app.post('/moderate-question', async (req, res) => {
+  const { text } = req.body;
+  if (!text) {
+    return res.status(400).json({ error: "Text is required" });
+  }
+  
+  try {
+    const moderationResult = await moderateContent(text);
+    res.json({ status: moderationResult });
+  } catch (error) {
+    console.error("Error in /moderate-question:", error);
+    res.status(500).json({ error: "Failed to moderate content" });
+  }
+});
+
 const uploadsDir = path.join(process.cwd(), 'uploads');
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir);
