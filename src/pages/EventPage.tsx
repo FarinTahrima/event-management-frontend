@@ -292,6 +292,12 @@ const EventPage: React.FC = () => {
                           />
                         </div>
                       )}
+                      {currentComponent.htmlContent &&
+                        !currentComponent.imageUrl && (
+                          <div className="max-w-full max-h-full overflow-auto">
+                            {currentComponent.htmlContent}
+                          </div>
+                        )}
                       {currentComponent.type === "video" && (
                         <div className="flex justify-center items-center w-full h-full">
                           <VideoJSSynced
