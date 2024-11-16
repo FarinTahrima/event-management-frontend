@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from 'react-router-dom';
 import ChatInput from "./ChatInput";
 import { LoadingSpinner } from "./LoadingSpinner";
 import ChatHistory from "./ChatHistory";
@@ -11,43 +12,82 @@ import {
 } from "@/utils/messaging-client";
 import { useParams } from "react-router-dom";
 
-export interface Message {
-  messageID: number;
+// Define interfaces for your message types
+interface Message {
   content: string;
+  messageID: string;
   sender: string;
-  timeStamp: Date;
-  type: string;
+  timestamp?: Date;
+}
+
+interface MessageWithSentiment extends Message {
+  sentiment?: {
+    label: string;
+    score: number;
+  };
 }
 
 const LiveChat = () => {
-  const [messages, setMessages] = useState<Message[]>([]); // messages state
-  const [messageToSend, setMessageToSend] = useState<string>("");
-  const [isLoading, setIsLoading] = useState<boolean>(false); // To handle loading state
-  const TRANSITION_DURATION_MS = 500; // fixed transition period in milliseconds
+  // Properly type the state
+  const [messages, setMessages] = useState<MessageWithSentiment[]>([]); 
+  const [messageToSend, setMessageToSend] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const TRANSITION_DURATION_MS = 500;
   const { roomId } = useParams();
 
-  var roomID = roomId || "";
+  const roomID = roomId || "";
+
+  const analyzeSentiment = async (message: Message) => {
+    try {
+      const response = await fetch('http://localhost:3000/analyze-sentiment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: message.content,
+          messageId: message.messageID,
+        }),
+      });
+      
+      const data = await response.json();
+      return data.sentiment;
+    } catch (error) {
+      console.error('Error analyzing sentiment:', error);
+      return null;
+    }
+  };
 
   useEffect(() => {
     const fetchMessagesAndSubscribe = async () => {
-      setIsLoading(false); // Start loading // TODO: change to true only outside of FDM
-      // Fetch past messages
+      setIsLoading(true);
       try {
         const pastMessages = await getPastMessages(roomID);
-        setMessages(pastMessages);
+        // Analyze sentiment for past messages
+        const messagesWithSentiment = await Promise.all(
+          pastMessages.map(async (message: Message) => ({
+            ...message,
+            sentiment: await analyzeSentiment(message),
+          }))
+        );
+        setMessages(messagesWithSentiment);
       } catch (error) {
         console.error("Error fetching past messages:", error);
       } finally {
         setTimeout(() => {
-          setIsLoading(false); // End loading
+          setIsLoading(false);
         }, TRANSITION_DURATION_MS);
       }
 
       const disconnectConnection = initWebSocketConnection({
         roomID: roomID,
-        onMessageReceived: (newMessage) => {
-          console.log(`Adding new message: ${newMessage}`);
-          setMessages((prevMessages) => [...prevMessages, newMessage]);
+        onMessageReceived: async (newMessage: Message) => {
+          const sentiment = await analyzeSentiment(newMessage);
+          const messageWithSentiment: MessageWithSentiment = {
+            ...newMessage,
+            sentiment,
+          };
+          setMessages((prevMessages) => [...prevMessages, messageWithSentiment]);
         },
       });
       return () => {
@@ -55,11 +95,10 @@ const LiveChat = () => {
       };
     };
     fetchMessagesAndSubscribe();
-  }, [roomID]); // re-subscribe when roomID changes
+  }, [roomID]);
 
   return (
     <div className="px-2 flex flex-col min-h-96 min-w-80 bg-[#161616]">
-      {/* Component title and icons */}
       <div className="flex flex-row flex-wrap justify-between p-2 pt-4 border border-0 border-b-2">
         <div className="flex items-center gap-2">
           <MessageSquare className="w-5 h-5 text-stone-50" />
@@ -67,7 +106,6 @@ const LiveChat = () => {
         </div>
       </div>
 
-      {/* Loading overlay */}
       {isLoading && (
         <div className="absolute inset-0 z-10 flex flex-col justify-center items-center bg-black bg-opacity-70">
           <h2 className="text-s font-bold font-alatsi">Loading</h2>
@@ -94,3 +132,4 @@ const LiveChat = () => {
 };
 
 export default LiveChat;
+
