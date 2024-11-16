@@ -232,12 +232,21 @@ const EventPage: React.FC = () => {
           </Button>
           <div className="flex-1 flex justify-between items-center">
             <LiveIndicator {...streamStatus} />
-            <Button
-              onClick={handleGoLive}
-              variant={streamStatus.isLive ? "destructive" : "default"}
-            >
-              {streamStatus.isLive ? "End Stream" : "Go Live"}
-            </Button>
+            <div className="flex items-center gap-4">
+              <Button
+                onClick={handleGoLive}
+                variant={streamStatus.isLive ? "destructive" : "default"}
+              >
+                {streamStatus.isLive ? "End Stream" : "Go Live"}
+              </Button>
+              <Button
+                onClick={() => navigate('/dashboard')}
+                variant="secondary"
+                className="bg-gray-700 hover:bg-gray-600 text-white border border-gray-600"
+              >
+                Dashboard
+              </Button>
+            </div>
           </div>
         </div>
       </div>
@@ -283,6 +292,12 @@ const EventPage: React.FC = () => {
                           />
                         </div>
                       )}
+                      {currentComponent.htmlContent &&
+                        !currentComponent.imageUrl && (
+                          <div className="max-w-full max-h-full overflow-auto">
+                            {currentComponent.htmlContent}
+                          </div>
+                        )}
                       {currentComponent.type === "video" && (
                         <div className="flex justify-center items-center w-full h-full">
                           <VideoJSSynced

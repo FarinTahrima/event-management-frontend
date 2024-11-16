@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { GoogleAIFileManager } from "@google/generative-ai/server";
-import multer from 'multer';
+import { HfInference } from '@huggingface/inference';
 import fs from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
@@ -16,25 +16,45 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// Configure multer for handling file uploads
-const upload = multer({
-  dest: 'uploads/',
-  limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
+const hf = new HfInference(process.env.HUGGING_FACE_API_KEY);
+
+let sentimentHistory = [];
+
+app.post('/analyze-sentiment', async (req, res) => {
+  const { message, messageId } = req.body;
+  
+  try {
+    const sentiment = await hf.textClassification({
+      model: 'nlptown/bert-base-multilingual-uncased-sentiment',
+      inputs: message,
+    });
+
+    const sentimentData = {
+      messageId,
+      message,
+      timestamp: new Date().toISOString(),
+      sentiment: {
+        label: sentiment[0].label,
+        score: parseFloat(sentiment[0].label.split(' ')[0])
+      }
+    };
+
+    sentimentHistory.push(sentimentData);
+    
+    res.json({ sentiment: sentimentData.sentiment });
+  } catch (error) {
+    console.error("Error analyzing sentiment:", error);
+    res.status(500).json({ error: "Failed to analyze sentiment" });
+  }
+});
+
+app.get('/sentiment-history', (req, res) => {
+  res.json(sentimentHistory);
 });
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY);
 const fileManager = new GoogleAIFileManager(process.env.GOOGLE_AI_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" }); 
-
-// Helper function to convert file to GenerativePart
-function fileToGenerativePart(path, mimeType) {
-  return {
-    inlineData: {
-      data: Buffer.from(fs.readFileSync(path)).toString("base64"),
-      mimeType
-    },
-  };
-}
 
 async function generateAIContent(prompt) {
   try {
@@ -55,17 +75,6 @@ async function generateAIContent(prompt) {
   }
 }
 
-async function generateImageBasedContent(imagePath, prompt, mimeType) {
-  try {
-    const imagePart = fileToGenerativePart(imagePath, mimeType);
-    const result = await model.generateContent([prompt, imagePart]);
-    return result.response.text();
-  } catch (error) {
-    console.error("Error generating image-based content:", error);
-    throw error;
-  }
-}
-
 app.post('/generate-ai', async (req, res) => {
   const { prompt } = req.body;
   if (!prompt) {
@@ -78,59 +87,6 @@ app.post('/generate-ai', async (req, res) => {
   } catch (error) {
     console.error("Error in /generate-ai:", error);
     res.status(500).json({ error: "Failed to generate AI content" });
-  }
-});
-
-app.post('/generate-with-image', upload.single('image'), async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ error: "Image file is required" });
-    }
-
-    const { prompt } = req.body;
-    if (!prompt) {
-      return res.status(400).json({ error: "Prompt is required" });
-    }
-
-    const imagePath = req.file.path;
-    const mimeType = req.file.mimetype;
-
-    const aiResponse = await generateImageBasedContent(imagePath, prompt, mimeType);
-
-    fs.unlinkSync(imagePath);
-
-    res.json({ response: aiResponse });
-  } catch (error) {
-    console.error("Error in /generate-with-image:", error);
-    res.status(500).json({ error: "Failed to generate content from image" });
-  }
-});
-
-// Optional: Endpoint to handle multiple images
-app.post('/generate-with-multiple-images', upload.array('images', 3), async (req, res) => {
-  try {
-    if (!req.files || req.files.length === 0) {
-      return res.status(400).json({ error: "At least one image is required" });
-    }
-
-    const { prompt } = req.body;
-    if (!prompt) {
-      return res.status(400).json({ error: "Prompt is required" });
-    }
-
-    const imageParts = req.files.map(file => 
-      fileToGenerativePart(file.path, file.mimetype)
-    );
-
-    const result = await model.generateContent([prompt, ...imageParts]);
-    const response = result.response.text();
-
-    req.files.forEach(file => fs.unlinkSync(file.path));
-
-    res.json({ response });
-  } catch (error) {
-    console.error("Error in /generate-with-multiple-images:", error);
-    res.status(500).json({ error: "Failed to generate content from images" });
   }
 });
 

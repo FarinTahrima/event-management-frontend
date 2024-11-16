@@ -165,15 +165,15 @@ const ViewerPage: React.FC = () => {
         <div className="flex-[3] p-6">
           <Card className="h-full flex items-center justify-center bg-gray-800">
             {currentComponent ? (
-              <div className="text-center p-6 w-full h-full">
+              <div className="text-center p-6 w-full h-full flex flex-col items-center justify-center">
                 {currentComponent.imageUrl &&
                   currentComponent.type !== "slide" &&
                   !currentComponent.htmlContent && (
-                  <img
-                    src={currentComponent.imageUrl}
-                    alt={currentComponent.title}
-                    className="mx-auto mb-4 rounded-lg shadow-md"
-                  />
+                    <img
+                      src={currentComponent.imageUrl}
+                      alt={currentComponent.title}
+                      className="mx-auto mb-4 rounded-lg shadow-md"
+                    />
                 )}
                 {currentComponent.type === "slide" && (
                   <div className="carousel w-full">
@@ -185,7 +185,11 @@ const ViewerPage: React.FC = () => {
                   </div>
                 )}
                 {currentComponent.htmlContent && !currentComponent.imageUrl && (
-                  <div>{currentComponent.htmlContent}</div>
+                  <div className="flex items-center justify-center w-full h-full">
+                    <div className="max-w-4xl w-full">
+                      {currentComponent.htmlContent}
+                    </div>
+                  </div>
                 )}
                 {currentComponent.type === "video" && (
                   <VideoJSSynced
