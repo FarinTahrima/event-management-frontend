@@ -19,9 +19,12 @@ app.use(express.json());
 const hf = new HfInference(process.env.HUGGING_FACE_API_KEY);
 
 let sentimentHistory = [];
-
+const messageIdSet = new Set();
 app.post('/analyze-sentiment', async (req, res) => {
   const { message, messageId } = req.body;
+  if (messageIdSet.has(messageId)) {
+    return res.status(409).json({ error: "Duplicate message ID" });
+  }
   
   try {
     const sentiment = await hf.textClassification({
@@ -38,8 +41,14 @@ app.post('/analyze-sentiment', async (req, res) => {
         score: parseFloat(sentiment[0].label.split(' ')[0])
       }
     };
-
-    sentimentHistory.push(sentimentData);
+    messageIdSet.add(messageId);
+    sentimentHistory.unshift(sentimentData);
+    if (sentimentHistory.length > 100) {
+      const removedItem = sentimentHistory.pop();
+      if (removedItem) {
+        messageIdSet.delete(removedItem.messageId);
+      }
+    }
     
     res.json({ sentiment: sentimentData.sentiment });
   } catch (error) {
@@ -49,7 +58,12 @@ app.post('/analyze-sentiment', async (req, res) => {
 });
 
 app.get('/sentiment-history', (req, res) => {
-  res.json(sentimentHistory);
+  try {
+    res.json(sentimentHistory);
+  } catch (error) {
+    console.error("Error fetching sentiment history:", error);
+    res.status(500).json({ error: "Failed to fetch sentiment history" });
+  }
 });
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY);
