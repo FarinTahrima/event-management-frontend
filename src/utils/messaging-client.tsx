@@ -1,7 +1,7 @@
 import { Stomp } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 import * as apiClient from "@/utils/api-client";
-import { Message } from "@/components/LiveChat";
+import { Message } from "@/types/types";
 import { Emoji } from "@/components/EmojiReaction";
 import { ModuleAction } from "@/pages/EventPage";
 import Module from "module";

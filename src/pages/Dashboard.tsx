@@ -35,8 +35,6 @@ const SentimentDashboard: React.FC = () => {
       }
       
       const data = await response.json();
-
-      // Use a Map to keep only the latest entry for each messageId
       const messageMap = new Map();
       data.forEach((item: SentimentHistoryItem) => {
         if (!messageMap.has(item.messageId) || 
