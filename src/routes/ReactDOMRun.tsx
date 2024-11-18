@@ -14,6 +14,7 @@ import ViewerPage from "@/pages/ViewerPage";
 import Record from "@/pages/VideoRecorder";
 import PigeonPage from "@/pages/PigeonPage";
 import SharedLayout from "./SharedLayout";
+import Dashboard from "@/pages/Dashboard";
 
 const router = createBrowserRouter([
   {
@@ -54,6 +55,10 @@ const router = createBrowserRouter([
       {
         path: "model",
         element: <ModelPage />,
+      },
+      {
+        path: "dashboard",
+        element: <Dashboard />,
       },
       {
         path: "pigeon",

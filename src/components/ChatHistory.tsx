@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { Message } from "./LiveChat";
+import { Message } from '../types/types';
 import { ScrollArea } from "./shadcn/ui/scroll-area";
 
 interface ChatHistoryProps {
@@ -9,16 +9,6 @@ interface ChatHistoryProps {
 const ChatHistory: React.FC<ChatHistoryProps> = ({ chatMessages }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // const scrollToBottom = () => {
-  //   setTimeout(() => {
-  //     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  //   }, 0);
-  // };
-
-  // useEffect(() => {
-  //   scrollToBottom();
-  // }, [chatMessages]);
-
   return (
     <ScrollArea className="h-96">
       <div className="px-2 my-4">
@@ -27,11 +17,11 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({ chatMessages }) => {
             key={msg.messageID}
             className="my-2 text-[#A8A8A8] text-wrap text-start"
           >
-            <strong>{msg.sender}:</strong> {msg.content}
+            <strong>{msg.sender}</strong>: {msg.content}
           </p>
         ))}
+        <div ref={messagesEndRef} />
       </div>
-      <div ref={messagesEndRef} />
     </ScrollArea>
   );
 };

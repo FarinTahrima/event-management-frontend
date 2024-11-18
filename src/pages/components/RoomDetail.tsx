@@ -56,8 +56,8 @@ const RoomDetailsComponent: React.FC = () => {
 
   return (
     <div className="p-4 bg-gray-800 rounded-lg">
-      <h3 className="text-xl font-semibold mb-4 flex items-center">
-        <Calendar className="w-5 h-5 mr-2" />
+      <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
+        <Calendar className="w-6 h-6 text-blue-400" />
         Event Details
       </h3>
       <div className="space-y-3">

@@ -4,7 +4,7 @@ import { useGLTF } from '@react-three/drei';
 import { Button } from "@/components/shadcn/ui/button";
 import { Input } from "@/components/shadcn/ui/input";
 import { Label } from "@/components/shadcn/ui/label";
-import { RotateCw, ZoomIn, ZoomOut, Sun, Moon, Maximize2 } from 'lucide-react';
+import { RotateCw, ZoomIn, ZoomOut, Sun, Moon, Maximize2, ArrowLeft } from 'lucide-react';
 import ModelManager from './ModelViewer/ModelManager';
 import { ModelConfig } from '@/types/components';
 import { useState, useEffect, Suspense } from 'react';
@@ -94,8 +94,16 @@ const ModelViewer = () => {
 
   return (
     <div className="bg-gray-900 flex min-h-screen bg-gray-100 p-4">
+      {/* Back Button */}
+      <Button
+        onClick={() => window.history.back()}
+        className="absolute top-4 left-4 bg-white text-black hover:bg-gray-200 shadow-lg rounded-lg px-4 py-2 transition-all duration-200 border border-gray-200 z-10"
+      >
+        <ArrowLeft className="w-5 h-5 mr-2" />
+        Back
+      </Button>
       {/* Left side - Model Viewer */}
-      <div className="flex-1 rounded-lg shadow-lg mr-4 relative" style={{ backgroundColor: backgroundColor }}>
+      <div className="flex-1 rounded-lg shadow-lg mr-4 relative mt-16" style={{ backgroundColor: backgroundColor }}>
         {modelUrl ? (
           <>
             <Canvas style={{ height: '80vh' }}>
