@@ -113,7 +113,6 @@ const Whiteboard: React.FC<WhiteboardProps> = ({ isHost, data, sendActionForWhit
     const { offsetX, offsetY } = nativeEvent;
     contextRef.current.lineTo(offsetX, offsetY);
     contextRef.current.stroke();
-    // can send the websocket signal
     if (sendActionForWhiteboard) {
       sendActionForWhiteboard({
         type: cursorMode == "pen" ? "draw" : "erase",
@@ -130,7 +129,6 @@ const Whiteboard: React.FC<WhiteboardProps> = ({ isHost, data, sendActionForWhit
     contextRef.current.closePath();
     setIsDrawing(false);
 
-    // can send the websocket signal
     if (sendActionForWhiteboard) {
       sendActionForWhiteboard({
         type: cursorMode == "pen" ? "draw_stop" : "erase_stop"
