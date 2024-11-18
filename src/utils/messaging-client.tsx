@@ -3,8 +3,7 @@ import SockJS from "sockjs-client";
 import * as apiClient from "@/utils/api-client";
 import { Message } from "@/types/types";
 import { Emoji } from "@/components/EmojiReaction";
-import { ModuleAction } from "@/pages/EventPage";
-import Module from "module";
+import { ModuleAction, WhiteboardAction } from "@/pages/EventPage";
 import { StatusMessage } from "@/pages/ViewerPage";
 
 export interface MessagingClientOptions {
@@ -23,6 +22,11 @@ export interface ModuleClientOptions {
   goLive: (isLive: boolean) => void;
 }
 
+export interface WhiteboardClientOptions {
+  roomID: string;
+  onReceived: (action: WhiteboardAction) => void;
+}
+
 export interface StreamClientOptions {
   roomID: string;
   onReceived: (status: StatusMessage) => void;
@@ -32,6 +36,7 @@ let client: any = null;
 let emojiClient: any = null;
 let moduleClient: any = null;
 let streamClient: any = null;
+let whiteboardClient: any = null;
 
 /**
  * Initializes WebSocket connection and subscribes to the chat topic
@@ -279,5 +284,62 @@ export const sendStreamStatus = async (status: StatusMessage) => {
   if (streamClient && streamClient.connected) {
     console.log("Sending status message:", status);
     streamClient.send("/app/streamStatus", {}, JSON.stringify(status));
+  }
+};
+
+export const WhiteboardConnection = (options: WhiteboardClientOptions) => {
+  const { roomID, onReceived } = options;
+  const userToken = localStorage.getItem("watchparty-token");
+  let token = userToken?.substring(1, userToken.length - 1);
+
+  if (!whiteboardClient || !whiteboardClient.connected) {
+    whiteboardClient = Stomp.over(
+      () => new SockJS(`http://localhost:8080/whiteboardAction?roomID=${roomID}`)
+    );
+    whiteboardClient.reconnectDelay = 5000;
+
+    whiteboardClient.connect(
+      {},
+      () => {
+        const topic = `/topic/whiteboardAction/${roomID}`;
+        console.log(`Connected and subscribed to: ${topic}`);
+        whiteboardClient.subscribe(topic, (message: any) => {
+          console.log(message);
+          const newAction = JSON.parse(message.body);
+          console.log(`New WhiteboardAction received: ${newAction.TYPE}`);
+          onReceived(newAction);
+        });
+      },
+      (error: Error) => {
+        console.error("WebSocket connection error:", error);
+      }
+    );
+  }
+
+  return () => {
+    if (whiteboardClient && whiteboardClient.connected) {
+      whiteboardClient.disconnect(() =>
+        console.log("Disconnected from WebSocket - whiteboardClient")
+      );
+      whiteboardClient = null;
+    }
+  };
+};
+
+export const sendWhiteboardAction = async (action: WhiteboardAction) => {
+  if (whiteboardClient && whiteboardClient.connected) {
+    console.log("Sending whiteboard action:", action);
+    whiteboardClient.send("/app/whiteboardAction", {}, JSON.stringify(action));
+  } else {
+    whiteboardClient = Stomp.over(
+      () =>
+        new SockJS(
+          `http://localhost:8080/whiteboardAction?roomID=${action.SESSION_ID}`
+        )
+    );
+    whiteboardClient.connect({}, () => {
+      console.log("Reconnected and sending whiteboard action:", action);
+      whiteboardClient.send("/app/whiteboardAction", {}, JSON.stringify(action));
+    });
   }
 };

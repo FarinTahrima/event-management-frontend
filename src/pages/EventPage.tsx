@@ -23,13 +23,16 @@ import {
   ModuleConnection,
   sendModuleAction,
   sendStreamStatus,
+  sendWhiteboardAction,
   StreamConnection,
+  WhiteboardConnection,
 } from "@/utils/messaging-client";
 import { useAppContext } from "@/contexts/AppContext";
 import VideoJSSynced from "@/components/VideoJSSynced";
 import { Components, ComponentItem, Poll } from "@/data/componentData";
 import PollComponent from "./components/PollComponent";
 import SlideShow from "./components/SlideShow";
+import Whiteboard, { WhiteBoardData } from "./components/Whiteboard";
 
 interface StreamStatus {
   isLive: boolean;
@@ -45,6 +48,15 @@ export interface ModuleAction {
   TIMESTAMP: string;
   CONTENT?: string;
   slideIndex?: number;
+}
+
+export interface WhiteboardAction {
+  SESSION_ID: string;
+  TYPE: string;
+  X?: number;
+  Y?: number;
+  COLOR?: string;
+  LINE_WIDTH?: number;
 }
 
 export const videoSource =
@@ -124,6 +136,16 @@ const EventPage: React.FC = () => {
       },
     });
     return cleanupStreamWebSocket;
+  }, [roomId]);
+
+  useEffect(() => {
+    const cleanupWebSocket = WhiteboardConnection({
+      roomID: roomId ?? "",
+      onReceived: (action: WhiteboardAction) => {
+        console.log("Received ModuleAction:", action);
+      }
+    });
+    return cleanupWebSocket;
   }, [roomId]);
 
   const handleGoLive = () => {
@@ -217,6 +239,17 @@ const EventPage: React.FC = () => {
     });
   };
 
+  const sendActionForWhiteboard = (data: WhiteBoardData) => {
+    sendWhiteboardAction({
+      SESSION_ID: roomId ?? "",
+      TYPE: data.type,
+      X: data.x,
+      Y: data.y,
+      COLOR: data.color,
+      LINE_WIDTH: data.lineWidth
+    })
+  };
+
   return (
     <div className="flex flex-col h-screen bg-gray-900 text-white">
       {/* Top Navigation Bar */}
@@ -263,10 +296,10 @@ const EventPage: React.FC = () => {
                   {...provided.droppableProps}
                   className={`h-full flex flex-col items-center justify-center bg-gray-800 transition-colors ${
                     snapshot.isDraggingOver ? "border-2 border-blue-500" : ""
-                  } overflow-hidden`}
+                  }`}
                 >
                   {currentComponent ? (
-                    <div className="text-center p-2 w-full h-full overflow-hidden flex flex-col place-content-center">
+                    <div className="text-center p-2 w-full h-full flex flex-col place-content-center">
                       <h2 className="text-xl font-semibold mb-4 text-white">
                         {currentComponent.title}
                       </h2>
@@ -320,6 +353,9 @@ const EventPage: React.FC = () => {
                           changeToResultViewForViewers={changePollToResultViewForViewers}
                           changeToPollViewForViewers={changeResultToPollViewForViewers}
                         />
+                      )}
+                      {currentComponent.type === "whiteboard" && roomId && (
+                        <Whiteboard isHost sendActionForWhiteboard={sendActionForWhiteboard}/>
                       )}
                       {currentComponent.content && (
                         <p className="text-white mb-4">{currentComponent.content}</p>

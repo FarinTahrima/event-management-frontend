@@ -4,9 +4,9 @@ import LiveChat from "@/components/LiveChat";
 import Chatbot from "@/components/experimental/AIchatbot";
 import LiveIndicator from "./components/LiveIndicator";
 import RoomDetailsComponent from "./components/RoomDetail";
-import {ModuleConnection,sendModuleAction,StreamConnection} from "@/utils/messaging-client";
+import {ModuleConnection,sendModuleAction,StreamConnection, WhiteboardConnection} from "@/utils/messaging-client";
 import { useParams } from "react-router-dom";
-import { ModuleAction, videoSource } from "./EventPage";
+import { ModuleAction, videoSource, WhiteboardAction } from "./EventPage";
 import { Components, Poll } from "../data/componentData";
 import { getStreamStatus } from "@/utils/api-client";
 import VideoJSSynced from "@/components/VideoJSSynced";
@@ -14,6 +14,7 @@ import { useEffect, useState } from "react";
 import { useAppContext } from "@/contexts/AppContext";
 import PollComponent from "./components/PollComponent";
 import QuestionComponent from "./components/QuestionComponent";
+import Whiteboard, { WhiteBoardData } from "./components/Whiteboard";
 
 interface ComponentItem {
   id: string;
@@ -50,6 +51,7 @@ const ViewerPage: React.FC = () => {
   const roomID = roomId ? roomId.toString() : "";
   const { user } = useAppContext();
   const [pollMode, setPollMode] = useState<"vote" | "result">("vote");
+  const [data, setData] = useState<WhiteBoardData>();
 
   useEffect(() => {
     const cleanupWebSocket = ModuleConnection({
@@ -129,6 +131,32 @@ const ViewerPage: React.FC = () => {
     };
   }, [roomId]);
 
+  useEffect(() => {
+    const cleanupWebSocket = WhiteboardConnection({
+      roomID: roomID,
+      onReceived: (action: WhiteboardAction) => {
+        console.log("Received WhiteboardAction:", action);
+        if (action.TYPE == "draw") {
+          setData({type: action.TYPE, x: action.X, y: action.Y, color: action.COLOR, lineWidth: action.LINE_WIDTH})
+        }
+        else if (action.TYPE == "erase") {
+          setData({type: action.TYPE, x: action.X, y: action.Y, lineWidth: action.LINE_WIDTH})
+        }
+        else if (action.TYPE == "change_marker_color") {
+          setData({type: action.TYPE, color: action.COLOR})
+        }
+        else if (action.TYPE == "change_marker_line_width") {
+          setData({type: action.TYPE, lineWidth: action.LINE_WIDTH})
+        }
+        else {
+          setData({type: action.TYPE})
+        }
+      }
+    });
+
+    return cleanupWebSocket;
+  }, [roomId]);
+
   const videoJSOptions = {
     sources: [
       {
@@ -162,7 +190,7 @@ const ViewerPage: React.FC = () => {
       {/* Main Content */}
       <div className="flex flex-1 overflow-hidden">
         {/* Main Stage */}
-        <div className="flex-[3] p-6">
+        <div className="flex-[3] p-6 h-full overflow-hidden">
           <Card className="h-full flex items-center justify-center bg-gray-800">
             {currentComponent ? (
               <div className="text-center p-6 w-full h-full flex flex-col items-center justify-center">
@@ -209,6 +237,9 @@ const ViewerPage: React.FC = () => {
                     pollMode={pollMode}
                     setPollMode={setPollMode}
                   />
+                )}
+                {currentComponent.type == "whiteboard" && roomId && (
+                  <Whiteboard isHost={false} data={data} setData={setData}/>
                 )}
               </div>
             ) : (
