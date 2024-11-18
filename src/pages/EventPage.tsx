@@ -32,7 +32,7 @@ import VideoJSSynced from "@/components/VideoJSSynced";
 import { Components, ComponentItem, Poll } from "@/data/componentData";
 import PollComponent from "./components/PollComponent";
 import SlideShow from "./components/SlideShow";
-import Whiteboard from "./components/Whiteboard";
+import Whiteboard, { WhiteBoardData } from "./components/Whiteboard";
 
 interface StreamStatus {
   isLive: boolean;
@@ -254,23 +254,14 @@ const EventPage: React.FC = () => {
     });
   };
 
-  const sendDrawAction = (x: number, y: number, color: string, lineWidth: number) => {
-    console.log("to send drawing to viewers");
+  const sendActionForWhiteboard = (data: WhiteBoardData) => {
     sendWhiteboardAction({
       SESSION_ID: roomId ?? "",
-      TYPE: "draw",
-      X: x,
-      Y: y,
-      COLOR: color,
-      LINE_WIDTH: lineWidth
-    })
-  };
-
-  const stopDrawAction = () => {
-    console.log("to stop drawing to viewers");
-    sendWhiteboardAction({
-      SESSION_ID: roomId ?? "",
-      TYPE: "draw_stop"
+      TYPE: data.type,
+      X: data.x,
+      Y: data.y,
+      COLOR: data.color,
+      LINE_WIDTH: data.lineWidth
     })
   };
 
@@ -311,10 +302,10 @@ const EventPage: React.FC = () => {
                   {...provided.droppableProps}
                   className={`h-full flex flex-col items-center justify-center bg-gray-800 transition-colors ${
                     snapshot.isDraggingOver ? "border-2 border-blue-500" : ""
-                  } overflow-hidden`}
+                  }`}
                 >
                   {currentComponent ? (
-                    <div className="text-center p-2 w-full h-full overflow-hidden flex flex-col place-content-center">
+                    <div className="text-center p-2 w-full h-full flex flex-col place-content-center">
                       <h2 className="text-xl font-semibold mb-4 text-white">
                         {currentComponent.title}
                       </h2>
@@ -376,7 +367,7 @@ const EventPage: React.FC = () => {
                         />
                       )}
                       {currentComponent.type === "whiteboard" && roomId && (
-                        <Whiteboard isHost sendDrawAction={sendDrawAction} stopDrawAction={stopDrawAction}/>
+                        <Whiteboard isHost sendActionForWhiteboard={sendActionForWhiteboard}/>
                       )}
                       <p className="text-white mb-4">
                         {currentComponent.content}

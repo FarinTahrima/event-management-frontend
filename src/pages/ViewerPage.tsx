@@ -137,14 +137,21 @@ const ViewerPage: React.FC = () => {
       roomID: roomID,
       onReceived: (action: WhiteboardAction) => {
         console.log("Received WhiteboardAction:", action);
-        // white board send
         if (action.TYPE == "draw") {
-          setData({type: "draw", x: action.X, y: action.Y, color: action.COLOR, lineWidth: action.LINE_WIDTH})
+          setData({type: action.TYPE, x: action.X, y: action.Y, color: action.COLOR, lineWidth: action.LINE_WIDTH})
         }
-        if (action.TYPE == "draw_stop") {
-          setData({type: "draw_stop"})
+        else if (action.TYPE == "erase") {
+          setData({type: action.TYPE, x: action.X, y: action.Y, lineWidth: action.LINE_WIDTH})
         }
-        
+        else if (action.TYPE == "change_marker_color") {
+          setData({type: action.TYPE, color: action.COLOR})
+        }
+        else if (action.TYPE == "change_marker_line_width") {
+          setData({type: action.TYPE, lineWidth: action.LINE_WIDTH})
+        }
+        else {
+          setData({type: action.TYPE})
+        }
       }
     });
 
@@ -184,7 +191,7 @@ const ViewerPage: React.FC = () => {
       {/* Main Content */}
       <div className="flex flex-1 overflow-hidden">
         {/* Main Stage */}
-        <div className="flex-[3] p-6">
+        <div className="flex-[3] p-6 h-full overflow-hidden">
           <Card className="h-full flex items-center justify-center bg-gray-800">
             {currentComponent ? (
               <div className="text-center p-6 w-full">
