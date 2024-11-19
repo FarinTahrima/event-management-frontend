@@ -4,12 +4,7 @@ import LiveChat from "@/components/LiveChat";
 import Chatbot from "@/components/experimental/AIchatbot";
 import LiveIndicator from "./components/LiveIndicator";
 import RoomDetailsComponent from "./components/RoomDetail";
-import {
-  ModuleConnection,
-  sendModuleAction,
-  StreamConnection,
-  WhiteboardConnection,
-} from "@/utils/messaging-client";
+import {ModuleConnection,sendModuleAction,StreamConnection,WhiteboardConnection} from "@/utils/messaging-client";
 import { useParams } from "react-router-dom";
 import { ModuleAction, videoSource, WhiteboardAction } from "./EventPage";
 import { ComponentItem, Components, Poll } from "../data/componentData";
@@ -24,6 +19,7 @@ import SlideShow from "./components/SlideShow";
 import { Question } from "@/types/types";
 import { useQuestions } from "@/contexts/QuestionContext";
 import { SelectedQuestionDisplay } from "./components/PigeonComponent";
+import { ChevronUp, ChevronDown, Info } from "lucide-react";
 
 interface StreamStatus {
   isLive: boolean;
@@ -41,12 +37,12 @@ export interface StatusMessage {
 
 const ViewerPage: React.FC = () => {
   const [poll, setPoll] = useState(Poll);
-  const [currentComponent, setCurrentComponent] =
-    useState<ComponentItem | null>(null);
+  const [currentComponent, setCurrentComponent] = useState<ComponentItem | null>(null);
   const [streamStatus, setStreamStatus] = useState<StreamStatus>({
     isLive: false,
     viewerCount: 0,
   });
+  const [isRoomDetailsExpanded, setIsRoomDetailsExpanded] = useState(true);
   const { roomId } = useParams();
   const roomID = roomId ? roomId.toString() : "";
   const { user } = useAppContext();
@@ -221,6 +217,10 @@ const ViewerPage: React.FC = () => {
     });
   };
 
+  const toggleRoomDetails = () => {
+    setIsRoomDetailsExpanded(!isRoomDetailsExpanded);
+  };
+
   return (
     <div className="flex flex-col h-screen bg-gray-900 text-white">
       {/* Stream Status Bar */}
@@ -304,20 +304,48 @@ const ViewerPage: React.FC = () => {
         {/* Right Sidebar */}
         <div className="flex-1 bg-gray-800 shadow-lg flex flex-col h-full">
           {/* Room Details Section */}
-          <div className="h-[200px] min-h-[200px]">
-            <ScrollArea className="h-full">
-              <RoomDetailsComponent />
-            </ScrollArea>
+          <div className={`transition-all duration-300 ease-in-out ${
+            isRoomDetailsExpanded ? 'h-[200px]' : 'h-[40px]'
+          }`}>
+            <div 
+              className="flex items-center justify-between px-4 py-2 cursor-pointer bg-gray-700"
+              onClick={toggleRoomDetails}
+            >
+              <div className="flex items-center gap-2">
+                <Info className="w-5 h-5 text-blue-400" />  
+                <span className="font-semibold">Room Details</span>
+              </div>
+              {isRoomDetailsExpanded ? (
+                <ChevronUp className="w-5 h-5" />
+              ) : (
+                <ChevronDown className="w-5 h-5" />
+              )}
+            </div>
+            <div className={`overflow-hidden transition-all duration-300 ${
+              isRoomDetailsExpanded ? 'h-[calc(200px-40px)]' : 'h-0'
+            }`}>
+              <ScrollArea className="h-full">
+                <RoomDetailsComponent />
+              </ScrollArea>
+            </div>
           </div>
 
           {/* Questions Section */}
-          <div className="flex-1 border-y border-gray-700 overflow-hidden">
-            <QuestionComponent isHost={false} />
+          <div className="flex-1 border-y border-gray-700 overflow-hidden flex flex-col">
+            <div className="flex-1 overflow-hidden">
+              <ScrollArea className="h-full">
+                <QuestionComponent isHost={false} />
+              </ScrollArea>
+            </div>
           </div>
 
-          {/* Live Chat */}
-          <div className="h-[550px] min-h-[550px]">
-            <LiveChat />
+          {/* Live Chat Section */}
+          <div className="flex-1 overflow-hidden flex flex-col">
+            <div className="flex-1 overflow-hidden">
+              <ScrollArea className="h-full">
+                <LiveChat />
+              </ScrollArea>
+            </div>
           </div>
         </div>
       </div>
