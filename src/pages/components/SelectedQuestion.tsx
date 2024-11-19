@@ -24,7 +24,7 @@ const SelectedQuestion: React.FC = () => {
             <span className="text-sm ml-1">votes</span>
           </div>
         </div>
-        <p className="text-xl font-semibold flex-1">{selectedQuestion.text}</p>
+        <p className="text-xl font-semibold flex-1 text-white">{selectedQuestion.text}</p>
         <div className="mt-4">
           <p className="text-sm text-gray-400 flex items-center gap-2">
             <Clock className="h-4 w-4" />

@@ -47,7 +47,7 @@ const QuestionComponent: React.FC = () => {
                 <Button
                   variant={question.hasVoted ? "secondary" : "ghost"}
                   size="sm"
-                  className={`flex flex-col items-center min-w-[60px] ${
+                  className={`flex flex-col items-center min-w-[60px] text-white${
                     question.hasVoted ? 'bg-blue-500 hover:bg-blue-600' : ''
                   }`}
                   onClick={(e) => {

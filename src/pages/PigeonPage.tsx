@@ -24,7 +24,7 @@ const SelectedQuestionDisplay: React.FC<{ question: Question | null }> = ({ ques
                         <span className="text-sm ml-1">votes</span>
                     </div>
                 </div>
-                <p className="text-xl font-semibold flex-1">{question.text}</p>
+                <p className="text-xl font-semibold flex-1 text-white">{question.text}</p>
                 <div className="mt-4">
                     <p className="text-sm text-gray-400 flex items-center gap-2">
                         <Clock className="h-4 w-4" />
@@ -82,7 +82,7 @@ const PigeonPage: React.FC = () => {
                                         >
                                             <div className="flex gap-4">
                                                 <div className="flex-1">
-                                                    <p className="text-md">{question.text}</p>
+                                                    <p className="text-md text-white">{question.text}</p>
                                                     <p className="text-xs text-gray-400 mt-2 flex items-center gap-1">
                                                         <Clock className="h-3 w-3" />
                                                         {new Date(question.timestamp).toLocaleTimeString()}
@@ -127,7 +127,7 @@ const PigeonPage: React.FC = () => {
                                 >
                                     <div className="flex gap-4">
                                         <button
-                                            className={`flex flex-col items-center min-w-[60px] p-2 rounded ${
+                                            className={`flex flex-col items-center min-w-[60px] p-2 rounded text-white ${
                                                 question.hasVoted ? 'bg-blue-500 hover:bg-blue-600' : 'bg-gray-700 hover:bg-gray-600'
                                             }`}
                                             onClick={(e) => {
@@ -135,11 +135,11 @@ const PigeonPage: React.FC = () => {
                                                 handleVote(question.id);
                                             }}
                                         >
-                                            <ChevronUp className="h-5 w-5" />
-                                            <span className="text-sm font-semibold">{question.votes}</span>
+                                            <ChevronUp className="h-5 w-5 text-white"/>
+                                            <span className="text-sm font-semibold text-white">{question.votes}</span>
                                         </button>
                                         <div className="flex-1">
-                                            <p className="text-md">{question.text}</p>
+                                            <p className="text-md text-white">{question.text}</p>
                                             <p className="text-xs text-gray-400 mt-2 flex items-center gap-1">
                                                 <Clock className="h-3 w-3" />
                                                 {new Date(question.timestamp).toLocaleTimeString()}
