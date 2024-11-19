@@ -1,24 +1,20 @@
-import { useEffect, useState, useRef } from 'react';
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from 'recharts';
-import { SentimentHistoryItem, ChartDataPoint } from '../types/types';
+import { useEffect, useState, useRef, useMemo } from 'react';
+import {LineChart,Line,XAxis,YAxis,CartesianGrid,Tooltip,Legend,ResponsiveContainer} from 'recharts';
+import { SentimentHistoryItem } from '../types/types';
 import { useNavigate } from 'react-router-dom';
 
 const SentimentDashboard: React.FC = () => {
   const [sentimentHistory, setSentimentHistory] = useState<SentimentHistoryItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [refreshInterval, setRefreshInterval] = useState<number>(30000); // 30 seconds
+  const [refreshInterval, setRefreshInterval] = useState<number>(30000);
   const navigate = useNavigate();
   const controllerRef = useRef<AbortController | null>(null);
+
+  // Helper function to normalize messages
+  const normalizeMessage = (message: string): string => {
+    return message?.trim().toLowerCase().replace(/\s+/g, ' ') || '';
+  };
 
   const fetchSentimentHistory = async () => {
     try {
@@ -35,20 +31,25 @@ const SentimentDashboard: React.FC = () => {
       }
       
       const data = await response.json();
-      const messageMap = new Map();
+      const latestMessages = new Map<string, SentimentHistoryItem>();
+      
       data.forEach((item: SentimentHistoryItem) => {
-        if (!messageMap.has(item.messageId) || 
-            new Date(item.timestamp) > new Date(messageMap.get(item.messageId).timestamp)) {
-          messageMap.set(item.messageId, item);
+        if (!item.message) return; 
+        
+        const normalizedMessage = normalizeMessage(item.message);
+        const existingItem = latestMessages.get(normalizedMessage);
+        
+        // Keep the most recent version of duplicate messages
+        if (!existingItem || new Date(item.timestamp) > new Date(existingItem.timestamp)) {
+          latestMessages.set(normalizedMessage, item);
         }
       });
 
-      const uniqueData = Array.from(messageMap.values());
-      const sortedData = uniqueData.sort((a, b) => 
-        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-      );
+      // Convert Map back to array and sort by timestamp
+      const uniqueData = Array.from(latestMessages.values())
+        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
       
-      setSentimentHistory(sortedData);
+      setSentimentHistory(uniqueData);
     } catch (error) {
       if (error instanceof Error && error.name !== 'AbortError') {
         setError(error.message);
@@ -72,47 +73,35 @@ const SentimentDashboard: React.FC = () => {
 
     return () => {
       controllerRef.current?.abort();
-      if (intervalId) {
-        clearInterval(intervalId);
-      }
+      clearInterval(intervalId);
     };
   }, [refreshInterval]);
 
-  const formatChartData = (data: SentimentHistoryItem[]): ChartDataPoint[] => {
-    return [...data]
+  // Memoize chart data to prevent unnecessary recalculations
+  const chartData = useMemo(() => {
+    return [...sentimentHistory]
       .reverse()
-      .map(item => {
-        try {
-          const score = item.sentiment?.score ?? 0;
-          return {
-            time: new Date(item.timestamp).toLocaleTimeString(),
-            sentiment: score,
-            message: item.message || '',
-          };
-        } catch (error) {
-          console.error('Error formatting item:', item, error);
-          return {
-            time: new Date().toLocaleTimeString(),
-            sentiment: 0,
-            message: '',
-          };
-        }
-      });
-  };
+      .map(item => ({
+        time: new Date(item.timestamp).toLocaleTimeString(),
+        sentiment: item.sentiment?.score ?? 0,
+        message: item.message || '',
+      }));
+  }, [sentimentHistory]);
 
-  const getSentimentColor = (score: number): string => {
+  // Memoize sentiment style helpers
+  const getSentimentColor = useMemo(() => (score: number): string => {
     if (score >= 4) return 'bg-green-900/30';
     if (score >= 3) return 'bg-blue-900/30';
     if (score >= 2) return 'bg-yellow-900/30';
     return 'bg-red-900/30';
-  };
+  }, []);
 
-  const getSentimentEmoji = (score: number): string => {
+  const getSentimentEmoji = useMemo(() => (score: number): string => {
     if (score >= 4) return '😊';
     if (score >= 3) return '🙂';
     if (score >= 2) return '😐';
     return '😟';
-  };
+  }, []);
 
   if (loading) {
     return (
@@ -152,8 +141,6 @@ const SentimentDashboard: React.FC = () => {
       </div>
     );
   }
-
-  const chartData = formatChartData(sentimentHistory);
 
   return (
     <div className="min-h-screen bg-black p-6">
@@ -235,7 +222,7 @@ const SentimentDashboard: React.FC = () => {
           <div className="space-y-4 max-h-[500px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-800">
             {sentimentHistory.map((item) => (
               <div
-                key={item.messageId}
+                key={`${normalizeMessage(item.message)}-${item.timestamp}`}
                 className={`p-4 rounded-lg border border-gray-700 transition-all hover:shadow-lg ${getSentimentColor(
                   item.sentiment?.score || 0
                 )}`}

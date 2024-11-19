@@ -124,7 +124,7 @@ const LandingPage = () => {
 
   const JoinEventForm = () => {
     const inputFieldFormat =
-      "border rounded py-2 px-3.5 my-2 font-sans font-medium text-black text-lg";
+      "border rounded py-2 px-3.5 my-2 font-sans font-medium text-white text-lg";
     const errorTextFormat = "text-red-500";
     const labelFormat = "flex flex-col";
     const subDivFormat = "grid grid-cols-1 gap-4 max-w-md w-full mx-auto";

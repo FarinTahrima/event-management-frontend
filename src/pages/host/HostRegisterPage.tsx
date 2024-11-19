@@ -31,7 +31,7 @@ const HostRegisterPage = () => {
   // Format strings
   const mainDivFormat = "text-white font-alatsi justify-center w-full"; // format for main div
   const inputFieldFormat =
-    "border rounded py-2 px-3.5 my-2 font-sans font-medium text-black text-lg"; // format for input field
+    "border rounded py-2 px-3.5 my-2 font-sans font-medium text-white text-lg"; // format for input field
   const errorTextFormat = "text-red-500";
   const labelFormat = "flex flex-col"; // each input field, title, and error message is wrapped by a label
   const subDivFormat = "grid grid-cols-2 gap-5"; // first two and last two fields are in each subdiv

@@ -66,20 +66,32 @@ async function analyzeSentiment(text) {
 
 app.post('/analyze-sentiment', async (req, res) => {
   const { message, messageId } = req.body;
-  
-  if (messageIdSet.has(messageId)) {
-    return res.status(409).json({ error: "Duplicate message ID" });
+  const normalizedContent = message.trim().toLowerCase();
+
+  // Check for existing message with same content
+  const existingMessage = sentimentHistory.find(item => 
+    item.message.trim().toLowerCase() === normalizedContent
+  );
+
+  // If duplicate content exists, return the existing sentiment
+  if (existingMessage) {
+    return res.json({ 
+      sentiment: existingMessage.sentiment,
+      isDuplicate: true 
+    });
   }
 
-  if (messageContentSet.has(message.trim().toLowerCase())) {
-    return res.status(409).json({ error: "Duplicate message content" });
+  // Generate unique messageId if the provided one is duplicate
+  let finalMessageId = messageId;
+  if (messageIdSet.has(messageId)) {
+    finalMessageId = `${messageId}_${Date.now()}`;
   }
   
   try {
     const sentiment = await analyzeSentiment(message);
 
     const sentimentData = {
-      messageId,
+      messageId: finalMessageId,
       message,
       timestamp: new Date().toISOString(),
       sentiment: {
@@ -87,8 +99,9 @@ app.post('/analyze-sentiment', async (req, res) => {
         score: sentiment.score
       }
     };
-    messageIdSet.add(messageId);
-    messageContentSet.add(message.trim().toLowerCase());
+
+    messageIdSet.add(finalMessageId);
+    messageContentSet.add(normalizedContent);
     sentimentHistory.unshift(sentimentData);
 
     if (sentimentHistory.length > 100) {
@@ -99,7 +112,10 @@ app.post('/analyze-sentiment', async (req, res) => {
       }
     }
     
-    res.json({ sentiment: sentimentData.sentiment });
+    res.json({ 
+      sentiment: sentimentData.sentiment,
+      isDuplicate: false 
+    });
   } catch (error) {
     console.error("Error analyzing sentiment:", error);
     res.status(500).json({ error: "Failed to analyze sentiment" });

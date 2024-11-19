@@ -14,7 +14,7 @@ export type CreateEventFormData = {
   password: string;
   scheduledDate: string;
   scheduledTime: string;
-};    
+};
 
 const HostCreateEvent = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -27,9 +27,10 @@ const HostCreateEvent = () => {
   const navigate = useNavigate();
   const labelFormat = "flex flex-col text-lg";
   const subDivFormat = "grid grid-cols-1 gap-4 max-w-md w-full mx-auto";
-  const inputFieldFormat = "border rounded py-2 px-3.5 my-2 font-sans font-medium text-black text-lg";
+  const inputFieldFormat =
+    "border rounded py-2 px-3.5 my-2 font-sans font-medium text-white text-lg";
   const errorTextFormat = "text-red-500";
-  
+
   const mutation = useMutation(apiClient.createEvent, {
     onSuccess: (data) => {
       setIsLoading(false);
@@ -77,7 +78,9 @@ const HostCreateEvent = () => {
         />
       </div>
       <div className="text-center">
-        <h1 className="text-5xl font-bold font-alatsi mt-4 inline-block">Event Details</h1>
+        <h1 className="text-5xl font-bold font-alatsi mt-4 inline-block">
+          Event Details
+        </h1>
         <div className="border-t border-gray-600 mt-4 w-full max-w-[calc(100%+5rem)] mx-auto"></div>
       </div>
       <form
@@ -95,7 +98,9 @@ const HostCreateEvent = () => {
               })}
             />
             {errors.eventName && (
-              <span className={errorTextFormat}>{errors.eventName.message}</span>
+              <span className={errorTextFormat}>
+                {errors.eventName.message}
+              </span>
             )}
           </label>
           <label className={labelFormat}>
@@ -121,7 +126,9 @@ const HostCreateEvent = () => {
               })}
             />
             {errors.scheduledDate && (
-              <span className={errorTextFormat}>{errors.scheduledDate.message}</span>
+              <span className={errorTextFormat}>
+                {errors.scheduledDate.message}
+              </span>
             )}
           </label>
           <label className={labelFormat}>
@@ -134,7 +141,9 @@ const HostCreateEvent = () => {
               })}
             />
             {errors.scheduledTime && (
-              <span className={errorTextFormat}>{errors.scheduledTime.message}</span>
+              <span className={errorTextFormat}>
+                {errors.scheduledTime.message}
+              </span>
             )}
           </label>
           <Button
