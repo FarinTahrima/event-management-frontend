@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { Link } from 'react-router-dom';
 import ChatInput from "./ChatInput";
 import { LoadingSpinner } from "./LoadingSpinner";
 import ChatHistory from "./ChatHistory";
@@ -12,7 +11,6 @@ import {
 } from "@/utils/messaging-client";
 import { useParams } from "react-router-dom";
 
-// Define interfaces for your message types
 interface Message {
   content: string;
   messageID: string;

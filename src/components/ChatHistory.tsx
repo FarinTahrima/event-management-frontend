@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { Message } from '../types/types';
 import { ScrollArea } from "./shadcn/ui/scroll-area";
 

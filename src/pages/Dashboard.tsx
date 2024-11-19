@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useMemo } from 'react';
 import {LineChart,Line,XAxis,YAxis,CartesianGrid,Tooltip,Legend,ResponsiveContainer} from 'recharts';
-import { SentimentHistoryItem, ChartDataPoint } from '../types/types';
+import { SentimentHistoryItem } from '../types/types';
 import { useNavigate } from 'react-router-dom';
 
 const SentimentDashboard: React.FC = () => {
@@ -31,12 +31,10 @@ const SentimentDashboard: React.FC = () => {
       }
       
       const data = await response.json();
-      
-      // Create a Map using normalized message content as key
       const latestMessages = new Map<string, SentimentHistoryItem>();
       
       data.forEach((item: SentimentHistoryItem) => {
-        if (!item.message) return; // Skip items with no message
+        if (!item.message) return; 
         
         const normalizedMessage = normalizeMessage(item.message);
         const existingItem = latestMessages.get(normalizedMessage);
