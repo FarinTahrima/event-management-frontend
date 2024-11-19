@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Card } from "@/components/shadcn/ui/card";
-import { ScrollArea } from "@/components/shadcn/ui/scroll-area";
 import { Button } from "@/components/shadcn/ui/button";
 import { Input } from "@/components/shadcn/ui/input";
 import { ChevronUp, MessageSquarePlus, Bird, Clock } from "lucide-react";
@@ -9,6 +8,7 @@ import { useQuestions } from '../../contexts/QuestionContext';
 interface QuestionComponentProps {
   isHost: boolean;
 }
+
 const QuestionComponent: React.FC<QuestionComponentProps> = ({ isHost }) => {
   const { questions, handleVote, handleSelectQuestion, addQuestion } = useQuestions();
   const [newQuestion, setNewQuestion] = useState('');
@@ -22,9 +22,9 @@ const QuestionComponent: React.FC<QuestionComponentProps> = ({ isHost }) => {
   };
 
   return (
-    <div className="flex flex-col h-full max-w-4xl mx-auto bg-gray-900 rounded-lg shadow-xl">
-      {/* Header */}
-      <div className="p-4 border-b border-gray-800 bg-gray-800 rounded-t-lg">
+    <div className="flex flex-col h-full relative">
+      {/* Header - Fixed at top */}
+      <div className="sticky top-0 z-10 p-4 border-b border-gray-800 bg-gray-800">
         <div className="flex items-center justify-between">
           <h3 className="text-xl font-semibold flex items-center gap-2 text-white">
             <Bird className="h-6 w-6 text-blue-400" />
@@ -33,9 +33,9 @@ const QuestionComponent: React.FC<QuestionComponentProps> = ({ isHost }) => {
         </div>
       </div>
 
-      {/* Questions List */}
-      <ScrollArea className="flex-1 px-4">
-        <div className="space-y-3 py-4">
+      {/* Questions List - Scrollable middle section */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="space-y-3 p-4">
           {questions.map((question) => (
             <Card
               key={question.id}
@@ -50,7 +50,7 @@ const QuestionComponent: React.FC<QuestionComponentProps> = ({ isHost }) => {
                 <Button
                   variant={question.hasVoted ? "secondary" : "ghost"}
                   size="sm"
-                  className={`flex flex-col items-center min-w-[60px] text-white${
+                  className={`flex flex-col items-center min-w-[60px] text-white ${
                     question.hasVoted ? 'bg-blue-500 hover:bg-blue-600' : ''
                   }`}
                   onClick={(e) => {
@@ -72,10 +72,10 @@ const QuestionComponent: React.FC<QuestionComponentProps> = ({ isHost }) => {
             </Card>
           ))}
         </div>
-      </ScrollArea>
+      </div>
 
-      {/* Question Input */}
-      <div className="p-4 border-t border-gray-800 bg-gray-800 rounded-b-lg">
+      {/* Question Input - Fixed at bottom */}
+      <div className="sticky bottom-0 z-10 p-4 border-t border-gray-800 bg-gray-800">
         <form onSubmit={handleSubmitQuestion} className="flex gap-2">
           <Input
             type="text"
