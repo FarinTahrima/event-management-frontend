@@ -13,7 +13,7 @@ import {
 import { useParams } from "react-router-dom";
 import { ModuleAction, videoSource, WhiteboardAction } from "./EventPage";
 import { ComponentItem, Components, Poll } from "../data/componentData";
-import { getStreamStatus } from "@/utils/api-client";
+import { getCurrentModule, getStreamStatus } from "@/utils/api-client";
 import VideoJSSynced from "@/components/VideoJSSynced";
 import { useEffect, useState } from "react";
 import { useAppContext } from "@/contexts/AppContext";
