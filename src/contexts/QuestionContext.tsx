@@ -89,6 +89,10 @@ export const QuestionProvider: React.FC<{ children: React.ReactNode }> = ({ chil
                 body: JSON.stringify({ text })
             });
 
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
             const { status } = await response.json();
 
             const newQuestion: Question = {
