@@ -393,3 +393,20 @@ export const changeVote = async (
     throw error;
   }
 };
+
+export const getCurrentModule = async (roomID: string) => {
+  try {
+    const response = await axios.get(
+      `${API_BASE_URL}/api/moduleAction/${roomID}`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        withCredentials: true,
+      }
+    );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};

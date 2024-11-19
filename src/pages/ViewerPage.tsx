@@ -4,11 +4,16 @@ import LiveChat from "@/components/LiveChat";
 import Chatbot from "@/components/experimental/AIchatbot";
 import LiveIndicator from "./components/LiveIndicator";
 import RoomDetailsComponent from "./components/RoomDetail";
-import {ModuleConnection,sendModuleAction,StreamConnection, WhiteboardConnection} from "@/utils/messaging-client";
+import {
+  ModuleConnection,
+  sendModuleAction,
+  StreamConnection,
+  WhiteboardConnection,
+} from "@/utils/messaging-client";
 import { useParams } from "react-router-dom";
 import { ModuleAction, videoSource, WhiteboardAction } from "./EventPage";
 import { Components, Poll } from "../data/componentData";
-import { getStreamStatus } from "@/utils/api-client";
+import { getCurrentModule, getStreamStatus } from "@/utils/api-client";
 import VideoJSSynced from "@/components/VideoJSSynced";
 import { useEffect, useState } from "react";
 import { useAppContext } from "@/contexts/AppContext";
@@ -42,7 +47,8 @@ export interface StatusMessage {
 
 const ViewerPage: React.FC = () => {
   const [poll, setPoll] = useState(Poll);
-  const [currentComponent, setCurrentComponent] = useState<ComponentItem | null>(null);
+  const [currentComponent, setCurrentComponent] =
+    useState<ComponentItem | null>(null);
   const [streamStatus, setStreamStatus] = useState<StreamStatus>({
     isLive: false,
     viewerCount: 0,
@@ -54,22 +60,11 @@ const ViewerPage: React.FC = () => {
   const [data, setData] = useState<WhiteBoardData>();
 
   useEffect(() => {
-    const cleanupWebSocket = ModuleConnection({
-      roomID: roomID,
-      onReceived: (action: ModuleAction) => {
-        console.log("Received ModuleAction:", action);
-
-        if (action.TYPE == "poll_result" && action.CONTENT) {
-          setPoll(JSON.parse(action.CONTENT));
-          setPollMode("result");
-        }
-
-        if (action.TYPE == "poll_view" && action.CONTENT) {
-          setPoll(JSON.parse(action.CONTENT));
-          setPollMode("vote");
-        }
+    const fetchStatusAndConnect = async () => {
+      try {
+        const currentModule: ModuleAction = await getCurrentModule(roomID);
         const component = Components.find(
-          (component) => component.id === action.ID
+          (component) => component.id === currentModule.ID
         );
         if (component) {
           setCurrentComponent({
@@ -77,13 +72,42 @@ const ViewerPage: React.FC = () => {
             content: component.content ?? "",
           });
         }
-      },
-      goLive: (isLive: boolean) => {
-        console.log(isLive);
-      },
-    });
+      } catch (error) {
+        console.error("Error fetching current module:", error);
+      }
 
-    return cleanupWebSocket;
+      const cleanupWebSocket = ModuleConnection({
+        roomID: roomID,
+        onReceived: (action: ModuleAction) => {
+          console.log("Received ModuleAction:", action);
+
+          if (action.TYPE == "poll_result" && action.CONTENT) {
+            setPoll(JSON.parse(action.CONTENT));
+            setPollMode("result");
+          }
+
+          if (action.TYPE == "poll_view" && action.CONTENT) {
+            setPoll(JSON.parse(action.CONTENT));
+            setPollMode("vote");
+          }
+          const component = Components.find(
+            (component) => component.id === action.ID
+          );
+          if (component) {
+            setCurrentComponent({
+              ...component,
+              content: component.content ?? "",
+            });
+          }
+        },
+        goLive: (isLive: boolean) => {
+          console.log(isLive);
+        },
+      });
+
+      return cleanupWebSocket;
+    };
+    fetchStatusAndConnect();
   }, [roomId]);
 
   useEffect(() => {
@@ -137,21 +161,28 @@ const ViewerPage: React.FC = () => {
       onReceived: (action: WhiteboardAction) => {
         console.log("Received WhiteboardAction:", action);
         if (action.TYPE == "draw") {
-          setData({type: action.TYPE, x: action.X, y: action.Y, color: action.COLOR, lineWidth: action.LINE_WIDTH})
+          setData({
+            type: action.TYPE,
+            x: action.X,
+            y: action.Y,
+            color: action.COLOR,
+            lineWidth: action.LINE_WIDTH,
+          });
+        } else if (action.TYPE == "erase") {
+          setData({
+            type: action.TYPE,
+            x: action.X,
+            y: action.Y,
+            lineWidth: action.LINE_WIDTH,
+          });
+        } else if (action.TYPE == "change_marker_color") {
+          setData({ type: action.TYPE, color: action.COLOR });
+        } else if (action.TYPE == "change_marker_line_width") {
+          setData({ type: action.TYPE, lineWidth: action.LINE_WIDTH });
+        } else {
+          setData({ type: action.TYPE });
         }
-        else if (action.TYPE == "erase") {
-          setData({type: action.TYPE, x: action.X, y: action.Y, lineWidth: action.LINE_WIDTH})
-        }
-        else if (action.TYPE == "change_marker_color") {
-          setData({type: action.TYPE, color: action.COLOR})
-        }
-        else if (action.TYPE == "change_marker_line_width") {
-          setData({type: action.TYPE, lineWidth: action.LINE_WIDTH})
-        }
-        else {
-          setData({type: action.TYPE})
-        }
-      }
+      },
     });
 
     return cleanupWebSocket;
@@ -186,7 +217,7 @@ const ViewerPage: React.FC = () => {
           <LiveIndicator {...streamStatus} />
         </div>
       </div>
-  
+
       {/* Main Content */}
       <div className="flex flex-1 overflow-hidden">
         {/* Main Stage */}
@@ -202,7 +233,7 @@ const ViewerPage: React.FC = () => {
                       alt={currentComponent.title}
                       className="mx-auto mb-4 rounded-lg shadow-md"
                     />
-                )}
+                  )}
                 {currentComponent.type === "slide" && (
                   <div className="carousel w-full">
                     <img
@@ -239,7 +270,7 @@ const ViewerPage: React.FC = () => {
                   />
                 )}
                 {currentComponent.type == "whiteboard" && roomId && (
-                  <Whiteboard isHost={false} data={data} setData={setData}/>
+                  <Whiteboard isHost={false} data={data} setData={setData} />
                 )}
               </div>
             ) : (
@@ -249,7 +280,7 @@ const ViewerPage: React.FC = () => {
             )}
           </Card>
         </div>
-  
+
         {/* Right Sidebar */}
         <div className="flex-1 bg-gray-800 shadow-lg flex flex-col h-full">
           {/* Room Details Section */}
@@ -258,12 +289,12 @@ const ViewerPage: React.FC = () => {
               <RoomDetailsComponent />
             </ScrollArea>
           </div>
-  
+
           {/* Questions Section */}
           <div className="flex-1 border-y border-gray-700 overflow-hidden">
             <QuestionComponent />
           </div>
-  
+
           {/* Live Chat */}
           <div className="h-[550px] min-h-[550px]">
             <LiveChat />
