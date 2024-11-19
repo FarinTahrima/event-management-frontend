@@ -6,7 +6,10 @@ import { Input } from "@/components/shadcn/ui/input";
 import { ChevronUp, MessageSquarePlus, Bird, Clock } from "lucide-react";
 import { useQuestions } from '../../contexts/QuestionContext';
 
-const QuestionComponent: React.FC = () => {
+interface QuestionComponentProps {
+  isHost: boolean;
+}
+const QuestionComponent: React.FC<QuestionComponentProps> = ({ isHost }) => {
   const { questions, handleVote, handleSelectQuestion, addQuestion } = useQuestions();
   const [newQuestion, setNewQuestion] = useState('');
 
@@ -41,7 +44,7 @@ const QuestionComponent: React.FC = () => {
                   ? 'bg-blue-600 hover:bg-blue-700' 
                   : 'bg-gray-800 hover:bg-gray-700'
               }`}
-              onClick={() => handleSelectQuestion(question)}
+              onClick={() => isHost && handleSelectQuestion(question)}
             >
               <div className="flex gap-4">
                 <Button

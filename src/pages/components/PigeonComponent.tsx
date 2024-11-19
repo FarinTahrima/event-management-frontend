@@ -1,15 +1,19 @@
 import React from 'react';
-import { useQuestions } from '../contexts/QuestionContext';
+import { useQuestions } from '../../contexts/QuestionContext';
 import { Card } from "@/components/shadcn/ui/card";
 import { Button } from "@/components/shadcn/ui/button";
 import { ScrollArea } from "@/components/shadcn/ui/scroll-area";
-import { ChevronUp, Clock, Trash2, ArrowLeft, CheckCircle, XCircle } from "lucide-react";
-import { Question } from '../types/types';
+import { ChevronUp, Clock, Trash2, CheckCircle, XCircle } from "lucide-react";
+import { Question } from '../../types/types';
 
-const SelectedQuestionDisplay: React.FC<{ question: Question | null }> = ({ question }) => {
+interface PigeonProps {
+    sendSelectQuestionAction?: (question: Question) => void;
+}
+
+export const SelectedQuestionDisplay: React.FC<{ question: Question | null }> = ({ question }) => {
     if (!question) {
         return (
-            <div className="flex items-center justify-center h-full bg-gray-800 rounded-lg p-4">
+            <div className="flex items-center align-center justify-center h-full bg-gray-800 rounded-lg p-4">
                 <p className="text-gray-400">Select a question to display</p>
             </div>
         );
@@ -36,7 +40,7 @@ const SelectedQuestionDisplay: React.FC<{ question: Question | null }> = ({ ques
     );
 };
 
-const PigeonPage: React.FC = () => {
+const PigeonComponent: React.FC<PigeonProps> = ({sendSelectQuestionAction}) => {
     const { 
         questions, 
         moderatedQuestions,
@@ -48,17 +52,14 @@ const PigeonPage: React.FC = () => {
     
     const selectedQuestion = questions.find(q => q.isSelected) || null;
 
+    function selectQuestion(question: Question) {
+        handleSelectQuestion(question);
+        if(sendSelectQuestionAction) sendSelectQuestionAction(question);
+        // localStorage.setItem("selectedQuestionId", question.id);
+    }
+
     return (
-        <div className="flex flex-col h-screen bg-gray-900 text-white p-4 relative">
-            <Button
-                onClick={() => window.history.back()}
-                className="absolute top-4 left-4 bg-white text-black hover:bg-gray-200 shadow-lg rounded-lg px-4 py-2 transition-all duration-200 border border-gray-200 z-10"
-            >
-                <ArrowLeft className="w-5 h-5 mr-2" />
-                Back
-            </Button>
-            
-            <h1 className="text-2xl font-bold mb-4 text-center pt-4">Pigeon Page</h1>
+        <div className="flex justify-center items-center w-full h-full">
             <div className="flex flex-1 gap-4 mt-8">
                 {/* Left side - Selected Question and Review Section */}
                 <div className="w-1/2 flex flex-col gap-4">
@@ -123,7 +124,7 @@ const PigeonPage: React.FC = () => {
                                             ? 'bg-blue-600 hover:bg-blue-700' 
                                             : 'bg-gray-800 hover:bg-gray-700'
                                     }`}
-                                    onClick={() => handleSelectQuestion(question)}
+                                    onClick={() => selectQuestion(question)}
                                 >
                                     <div className="flex gap-4">
                                         <button
@@ -165,4 +166,4 @@ const PigeonPage: React.FC = () => {
     );
 };
 
-export default PigeonPage;
+export default PigeonComponent;

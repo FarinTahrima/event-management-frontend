@@ -12,7 +12,6 @@ import HostCreateEvent from "@/pages/host/HostCreateEvent";
 import HostManageEvent from "@/pages/host/HostManageEvent";
 import ViewerPage from "@/pages/ViewerPage";
 import Record from "@/pages/VideoRecorder";
-import PigeonPage from "@/pages/PigeonPage";
 import SharedLayout from "./SharedLayout";
 import Dashboard from "@/pages/Dashboard";
 
@@ -59,10 +58,6 @@ const router = createBrowserRouter([
       {
         path: "dashboard",
         element: <Dashboard />,
-      },
-      {
-        path: "pigeon",
-        element: <PigeonPage />,
       },
       {
         path: "record",

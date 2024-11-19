@@ -21,6 +21,9 @@ import PollComponent from "./components/PollComponent";
 import QuestionComponent from "./components/QuestionComponent";
 import Whiteboard, { WhiteBoardData } from "./components/Whiteboard";
 import SlideShow from "./components/SlideShow";
+import { Question } from "@/types/types";
+import { useQuestions } from "@/contexts/QuestionContext";
+import { SelectedQuestionDisplay } from "./components/PigeonComponent";
 
 interface StreamStatus {
   isLive: boolean;
@@ -49,6 +52,10 @@ const ViewerPage: React.FC = () => {
   const { user } = useAppContext();
   const [pollMode, setPollMode] = useState<"vote" | "result">("vote");
   const [data, setData] = useState<WhiteBoardData>();
+   const { questions } = useQuestions();
+  const selectedQuestion = questions.find(q => q.isSelected);
+  const [question ,setQuestion] = useState<Question|null>(selectedQuestion ? selectedQuestion : null);
+
 
   useEffect(() => {
     const fetchStatusAndConnect = async () => {
@@ -81,9 +88,14 @@ const ViewerPage: React.FC = () => {
             setPoll(JSON.parse(action.CONTENT));
             setPollMode("vote");
           }
+          if (action.TYPE == "select_pigeon_question" && action.CONTENT) {
+            setQuestion(JSON.parse(action.CONTENT));
+          }
+          
           const component = Components.find(
             (component) => component.id === action.ID
           );
+          console.log(component, "comp");
           if (component) {
             if (action.TYPE.startsWith("slide") && action.CONTENT) {
               console.log(JSON.parse(action.CONTENT));
@@ -275,6 +287,11 @@ const ViewerPage: React.FC = () => {
                 {currentComponent.type == "whiteboard" && roomId && (
                   <Whiteboard isHost={false} data={data} setData={setData} />
                 )}
+                {currentComponent.type == "pigeon-hole" && roomId && question &&(
+                  <div className="h-55">
+                    <SelectedQuestionDisplay question={question} />
+                  </div>
+                )}
               </div>
             ) : (
               <p className="text-gray-400">
@@ -295,7 +312,7 @@ const ViewerPage: React.FC = () => {
 
           {/* Questions Section */}
           <div className="flex-1 border-y border-gray-700 overflow-hidden">
-            <QuestionComponent />
+            <QuestionComponent isHost={false} />
           </div>
 
           {/* Live Chat */}

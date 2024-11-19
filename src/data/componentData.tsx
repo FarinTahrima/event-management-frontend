@@ -3,7 +3,6 @@ import { Image, FileVideo, Radio, BarChart2, Box, Bird, Presentation } from 'luc
 import VideoRecorder from '../pages/VideoRecorder';
 import ViewOnlyModelViewer from '@/pages/ModelViewer/ViewOnlyModelViewer';
 import { PollResponse } from '@/pages/host/HostCreatePoll';
-import SelectedQuestion from '@/pages/components/SelectedQuestion';
 
 export interface ComponentItem {
   id: string;
@@ -17,7 +16,6 @@ export interface ComponentItem {
   images?: string[];  
   currentImageIndex?: number;  
 }
-
 
 export const Poll: PollResponse = {
   "pollId": 1,
@@ -106,7 +104,7 @@ export const Components: ComponentItem[] = [
     icon: <Bird className="w-6 h-6" />,
     content: "Interactive Q&A",
     link: "/pigeon",
-    htmlContent: <SelectedQuestion />,
+    htmlContent: null
   },
   {
     id: "7",

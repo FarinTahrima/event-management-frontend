@@ -33,6 +33,8 @@ import { Components, ComponentItem, Poll } from "@/data/componentData";
 import PollComponent from "./components/PollComponent";
 import SlideShow from "./components/SlideShow";
 import Whiteboard, { WhiteBoardData } from "./components/Whiteboard";
+import PigeonComponent from "./components/PigeonComponent";
+import { Question } from "@/types/types";
 
 interface StreamStatus {
   isLive: boolean;
@@ -250,6 +252,17 @@ const EventPage: React.FC = () => {
     })
   };
 
+  const sendActionForPigeonSelectQuestion = (question: Question) => {
+    sendModuleAction({
+      ID: "64",
+      TYPE: "select_pigeon_question",
+      SESSION_ID: roomId ?? "",
+      SENDER: user?.username ?? "",
+      TIMESTAMP: new Date().toISOString(),
+      CONTENT: JSON.stringify(question)
+    });
+  }
+
   return (
     <div className="flex flex-col h-screen bg-gray-900 text-white">
       {/* Top Navigation Bar */}
@@ -356,6 +369,9 @@ const EventPage: React.FC = () => {
                       )}
                       {currentComponent.type === "whiteboard" && roomId && (
                         <Whiteboard isHost sendActionForWhiteboard={sendActionForWhiteboard}/>
+                      )}
+                       {currentComponent.type === "pigeon-hole" && roomId && (
+                        <PigeonComponent sendSelectQuestionAction={sendActionForPigeonSelectQuestion} />
                       )}
                       {currentComponent.content && (
                         <p className="text-white mb-4">{currentComponent.content}</p>
