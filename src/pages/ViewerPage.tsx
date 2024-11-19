@@ -194,7 +194,7 @@ const ViewerPage: React.FC = () => {
         <div className="flex-[3] p-6 h-full overflow-hidden">
           <Card className="h-full flex items-center justify-center bg-gray-800">
             {currentComponent ? (
-              <div className="text-center p-6 w-full h-full flex flex-col items-center justify-center">
+              <div className="text-center p-2 w-full h-full flex flex-col place-content-center">
                 {currentComponent.imageUrl &&
                   currentComponent.type !== "slide" &&
                   !currentComponent.htmlContent && (
