@@ -1,14 +1,5 @@
 import { useEffect, useState, useRef, useMemo } from 'react';
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from 'recharts';
+import {LineChart,Line,XAxis,YAxis,CartesianGrid,Tooltip,Legend,ResponsiveContainer} from 'recharts';
 import { SentimentHistoryItem, ChartDataPoint } from '../types/types';
 import { useNavigate } from 'react-router-dom';
 
@@ -19,6 +10,11 @@ const SentimentDashboard: React.FC = () => {
   const [refreshInterval, setRefreshInterval] = useState<number>(30000);
   const navigate = useNavigate();
   const controllerRef = useRef<AbortController | null>(null);
+
+  // Helper function to normalize messages
+  const normalizeMessage = (message: string): string => {
+    return message?.trim().toLowerCase().replace(/\s+/g, ' ') || '';
+  };
 
   const fetchSentimentHistory = async () => {
     try {
@@ -36,13 +32,18 @@ const SentimentDashboard: React.FC = () => {
       
       const data = await response.json();
       
-      // Create a Map using messageId as key and keep only the latest version of each message
+      // Create a Map using normalized message content as key
       const latestMessages = new Map<string, SentimentHistoryItem>();
       
       data.forEach((item: SentimentHistoryItem) => {
-        const existingItem = latestMessages.get(item.messageId);
+        if (!item.message) return; // Skip items with no message
+        
+        const normalizedMessage = normalizeMessage(item.message);
+        const existingItem = latestMessages.get(normalizedMessage);
+        
+        // Keep the most recent version of duplicate messages
         if (!existingItem || new Date(item.timestamp) > new Date(existingItem.timestamp)) {
-          latestMessages.set(item.messageId, item);
+          latestMessages.set(normalizedMessage, item);
         }
       });
 
@@ -223,7 +224,7 @@ const SentimentDashboard: React.FC = () => {
           <div className="space-y-4 max-h-[500px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-800">
             {sentimentHistory.map((item) => (
               <div
-                key={`${item.messageId}-${item.timestamp}`}
+                key={`${normalizeMessage(item.message)}-${item.timestamp}`}
                 className={`p-4 rounded-lg border border-gray-700 transition-all hover:shadow-lg ${getSentimentColor(
                   item.sentiment?.score || 0
                 )}`}
@@ -259,3 +260,4 @@ const SentimentDashboard: React.FC = () => {
 };
 
 export default SentimentDashboard;
+
