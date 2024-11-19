@@ -7,7 +7,7 @@ import RoomDetailsComponent from "./components/RoomDetail";
 import {ModuleConnection,sendModuleAction,StreamConnection, WhiteboardConnection} from "@/utils/messaging-client";
 import { useParams } from "react-router-dom";
 import { ModuleAction, videoSource, WhiteboardAction } from "./EventPage";
-import { Components, Poll } from "../data/componentData";
+import { ComponentItem, Components, Poll } from "../data/componentData";
 import { getStreamStatus } from "@/utils/api-client";
 import VideoJSSynced from "@/components/VideoJSSynced";
 import { useEffect, useState } from "react";
@@ -15,16 +15,8 @@ import { useAppContext } from "@/contexts/AppContext";
 import PollComponent from "./components/PollComponent";
 import QuestionComponent from "./components/QuestionComponent";
 import Whiteboard, { WhiteBoardData } from "./components/Whiteboard";
+import SlideShow from "./components/SlideShow";
 
-interface ComponentItem {
-  id: string;
-  type: string;
-  title: string;
-  icon: React.ReactNode;
-  content: string;
-  imageUrl?: string;
-  htmlContent?: any;
-}
 
 interface StreamStatus {
   isLive: boolean;
@@ -72,10 +64,19 @@ const ViewerPage: React.FC = () => {
           (component) => component.id === action.ID
         );
         if (component) {
-          setCurrentComponent({
-            ...component,
-            content: component.content ?? "",
-          });
+          if (action.TYPE.startsWith("slide") && action.CONTENT) {
+            console.log(JSON.parse(action.CONTENT));
+             setCurrentComponent({
+              ...component,
+              content: component.content ?? "",
+              currentImageIndex: JSON.parse(action.CONTENT).slideIndex
+            });
+          } else {
+            setCurrentComponent({
+              ...component,
+              content: component.content ?? ""
+            });
+          }
         }
       },
       goLive: (isLive: boolean) => {
@@ -203,14 +204,12 @@ const ViewerPage: React.FC = () => {
                       className="mx-auto mb-4 rounded-lg shadow-md"
                     />
                 )}
-                {currentComponent.type === "slide" && (
-                  <div className="carousel w-full">
-                    <img
-                      src={currentComponent.imageUrl}
-                      alt={currentComponent.title}
-                      className="w-full"
-                    />
-                  </div>
+                {currentComponent.type.startsWith("slide") && currentComponent.images && (
+                  <SlideShow 
+                    images={currentComponent.images}
+                    currentIndex={currentComponent.currentImageIndex ? currentComponent.currentImageIndex : 0}
+                    isHost={false}
+                  />
                 )}
                 {currentComponent.htmlContent && !currentComponent.imageUrl && (
                   <div className="flex items-center justify-center w-full h-full">
