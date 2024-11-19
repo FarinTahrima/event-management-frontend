@@ -2,7 +2,6 @@ import express from 'express';
 import cors from 'cors';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { GoogleAIFileManager } from "@google/generative-ai/server";
-import { HfInference } from '@huggingface/inference';
 import fs from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
@@ -16,37 +15,87 @@ app.use(cors({
 }));
 app.use(express.json());
 
-const hf = new HfInference(process.env.HUGGING_FACE_API_KEY);
-
 let sentimentHistory = [];
 const messageIdSet = new Set();
+const messageContentSet = new Set();
+const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY);
+const fileManager = new GoogleAIFileManager(process.env.GOOGLE_AI_API_KEY);
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" }); 
+
+async function analyzeSentiment(text) {
+  try {
+    const sentimentPrompt = `Analyze the sentiment of the following text and return a JSON object with exactly these two properties:
+    - "label": must be one of: "1 star", "2 stars", "3 stars", "4 stars", or "5 stars"
+    - "score": the corresponding number (1-5)
+    
+    Text to analyze: "${text}"
+    
+    Return ONLY the raw JSON object, with NO markdown formatting, NO backticks, and NO "json" prefix. Example:
+    {"label": "4 stars", "score": 4}`;
+
+    const result = await model.generateContent(sentimentPrompt);
+    const response = result.response.text()
+      .trim()
+      .replace(/```json\n?/g, '')
+      .replace(/```/g, '')
+      .replace(/\n/g, '')
+      .trim();
+
+    try {
+      const parsed = JSON.parse(response);
+
+      if (!parsed.label || !parsed.score || 
+          !parsed.label.match(/[1-5] stars?/) || 
+          parsed.score < 1 || parsed.score > 5) {
+        throw new Error('Invalid response format');
+      }
+      
+      return parsed;
+    } catch (parseError) {
+      console.error("Failed to parse or validate JSON response:", response);
+      return {
+        label: "3 stars",
+        score: 3
+      };
+    }
+  } catch (error) {
+    console.error("Error in sentiment analysis:", error);
+    throw error;
+  }
+}
+
 app.post('/analyze-sentiment', async (req, res) => {
   const { message, messageId } = req.body;
+  
   if (messageIdSet.has(messageId)) {
     return res.status(409).json({ error: "Duplicate message ID" });
   }
+
+  if (messageContentSet.has(message.trim().toLowerCase())) {
+    return res.status(409).json({ error: "Duplicate message content" });
+  }
   
   try {
-    const sentiment = await hf.textClassification({
-      model: 'nlptown/bert-base-multilingual-uncased-sentiment',
-      inputs: message,
-    });
+    const sentiment = await analyzeSentiment(message);
 
     const sentimentData = {
       messageId,
       message,
       timestamp: new Date().toISOString(),
       sentiment: {
-        label: sentiment[0].label,
-        score: parseFloat(sentiment[0].label.split(' ')[0])
+        label: sentiment.label,
+        score: sentiment.score
       }
     };
     messageIdSet.add(messageId);
+    messageContentSet.add(message.trim().toLowerCase());
     sentimentHistory.unshift(sentimentData);
+
     if (sentimentHistory.length > 100) {
       const removedItem = sentimentHistory.pop();
       if (removedItem) {
         messageIdSet.delete(removedItem.messageId);
+        messageContentSet.delete(removedItem.message.trim().toLowerCase());
       }
     }
     
@@ -65,10 +114,6 @@ app.get('/sentiment-history', (req, res) => {
     res.status(500).json({ error: "Failed to fetch sentiment history" });
   }
 });
-
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY);
-const fileManager = new GoogleAIFileManager(process.env.GOOGLE_AI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" }); 
 
 async function generateAIContent(prompt) {
   try {
@@ -106,21 +151,21 @@ app.post('/generate-ai', async (req, res) => {
 
 async function moderateContent(text) {
   try {
-      console.log("Moderating content:", text);
-      const moderationPrompt = `Please analyze the following content for appropriateness in a public Q&A setting. 
-      Consider factors like hate speech, explicit content, harassment, or other inappropriate content.
-      Respond with either "APPROVED" or "FLAGGED".
-      
-      Content to analyze: "${text}"`;
-      
-      const result = await model.generateContent(moderationPrompt);
-      const response = result.response.text().trim().toUpperCase();
-      console.log("Moderation response:", response);
-      
-      return response === "APPROVED" ? "approved" : "flagged";
+    console.log("Moderating content:", text);
+    const moderationPrompt = `Please analyze the following content for appropriateness in a public Q&A setting. 
+    Consider factors like hate speech, explicit content, harassment, or other inappropriate content.
+    Respond with either "APPROVED" or "FLAGGED".
+    
+    Content to analyze: "${text}"`;
+    
+    const result = await model.generateContent(moderationPrompt);
+    const response = result.response.text().trim().toUpperCase();
+    console.log("Moderation response:", response);
+    
+    return response === "APPROVED" ? "approved" : "flagged";
   } catch (error) {
-      console.error("Error in content moderation:", error);
-      throw error;
+    console.error("Error in content moderation:", error);
+    throw error;
   }
 }
 
