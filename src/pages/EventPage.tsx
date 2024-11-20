@@ -61,8 +61,7 @@ export interface WhiteboardAction {
   LINE_WIDTH?: number;
 }
 
-export const videoSource =
-  "http://localhost:8080/encoded/steamboatwillie_001/master.m3u8";
+export const videoSource = "http://localhost:8080/encoded/laptop/master.m3u8";
 
 const videoJSOptions = {
   sources: [
