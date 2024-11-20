@@ -1,8 +1,16 @@
-import React from 'react';
-import { Image, FileVideo, Radio, BarChart2, Box, Bird, Presentation } from 'lucide-react';
-import VideoRecorder from '../pages/VideoRecorder';
-import ViewOnlyModelViewer from '@/pages/ModelViewer/ViewOnlyModelViewer';
-import { PollResponse } from '@/pages/host/HostCreatePoll';
+import React from "react";
+import {
+  Image,
+  FileVideo,
+  Radio,
+  BarChart2,
+  Box,
+  Bird,
+  Presentation,
+} from "lucide-react";
+import VideoRecorder from "../pages/VideoRecorder";
+import ViewOnlyModelViewer from "@/pages/ModelViewer/ViewOnlyModelViewer";
+import { PollResponse } from "@/pages/host/HostCreatePoll";
 
 export interface ComponentItem {
   id: string;
@@ -13,38 +21,38 @@ export interface ComponentItem {
   imageUrl?: string;
   htmlContent?: React.ReactNode;
   link: string;
-  images?: string[];  
-  currentImageIndex?: number;  
+  images?: string[];
+  currentImageIndex?: number;
 }
 
 export const Poll: PollResponse = {
-  "pollId": 1,
-  "pollQuestion": "Which device are you using?",
-  "pollOptionList": [
-      {
-          "pollOptionId": 1,
-          "value": "Apple",
-          "description": "",
-          "imageUrl": "1-1-Apple.jpg",
-          "voteCount": 0
-      },
-      {
-          "pollOptionId": 2,
-          "value": "Windows",
-          "description": "",
-          "imageUrl": "1-2-windows.png",
-          "voteCount": 0
-      },
-      {
-        "pollOptionId": 3,
-        "value": "Blueberry",
-        "description": "",
-        "imageUrl": "1-3-blueberry.jpeg",
-        "voteCount": 0
-      }
+  pollId: 1,
+  pollQuestion: "Which device are you using?",
+  pollOptionList: [
+    {
+      pollOptionId: 1,
+      value: "Apple",
+      description: "",
+      imageUrl: "1-1-Apple.jpg",
+      voteCount: 0,
+    },
+    {
+      pollOptionId: 2,
+      value: "Windows",
+      description: "",
+      imageUrl: "1-2-windows.png",
+      voteCount: 0,
+    },
+    {
+      pollOptionId: 3,
+      value: "Blueberry",
+      description: "",
+      imageUrl: "1-3-blueberry.jpeg",
+      voteCount: 0,
+    },
   ],
-  "voted": false,
-  "selectedPollOption": null
+  voted: false,
+  selectedPollOption: null,
 };
 
 export const Components: ComponentItem[] = [
@@ -55,9 +63,9 @@ export const Components: ComponentItem[] = [
     icon: <Image className="w-6 h-6" />,
     content: "Welcome to the presentation!",
     images: [
-      "https://picsum.photos/id/0/600/300",
-      "https://picsum.photos/id/1/600/300",
-      "https://picsum.photos/id/2/600/300",
+      "https://picsum.photos/id/0/800/400",
+      "https://picsum.photos/id/1/800/400",
+      "https://picsum.photos/id/2/800/400",
       // Add more images as needed
     ],
     currentImageIndex: 0,
@@ -104,7 +112,7 @@ export const Components: ComponentItem[] = [
     icon: <Bird className="w-6 h-6" />,
     content: "Interactive Q&A",
     link: "/pigeon",
-    htmlContent: null
+    htmlContent: null,
   },
   {
     id: "7",
@@ -112,6 +120,6 @@ export const Components: ComponentItem[] = [
     title: "Whiteboard",
     icon: <Presentation className="w-6 h-6" />,
     link: "/whiteboard",
-    htmlContent: null
-  }
+    htmlContent: null,
+  },
 ];
