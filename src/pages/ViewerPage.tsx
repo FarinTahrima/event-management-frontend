@@ -4,7 +4,12 @@ import LiveChat from "@/components/LiveChat";
 import Chatbot from "@/components/experimental/AIchatbot";
 import LiveIndicator from "./components/LiveIndicator";
 import RoomDetailsComponent from "./components/RoomDetail";
-import {ModuleConnection,sendModuleAction,StreamConnection,WhiteboardConnection} from "@/utils/messaging-client";
+import {
+  ModuleConnection,
+  sendModuleAction,
+  StreamConnection,
+  WhiteboardConnection,
+} from "@/utils/messaging-client";
 import { useParams } from "react-router-dom";
 import { ModuleAction, videoSource, WhiteboardAction } from "./EventPage";
 import { ComponentItem, Components, Poll } from "../data/componentData";
@@ -37,7 +42,8 @@ export interface StatusMessage {
 
 const ViewerPage: React.FC = () => {
   const [poll, setPoll] = useState(Poll);
-  const [currentComponent, setCurrentComponent] = useState<ComponentItem | null>(null);
+  const [currentComponent, setCurrentComponent] =
+    useState<ComponentItem | null>(null);
   const [streamStatus, setStreamStatus] = useState<StreamStatus>({
     isLive: false,
     viewerCount: 0,
@@ -48,10 +54,11 @@ const ViewerPage: React.FC = () => {
   const { user } = useAppContext();
   const [pollMode, setPollMode] = useState<"vote" | "result">("vote");
   const [data, setData] = useState<WhiteBoardData>();
-   const { questions } = useQuestions();
-  const selectedQuestion = questions.find(q => q.isSelected);
-  const [question ,setQuestion] = useState<Question|null>(selectedQuestion ? selectedQuestion : null);
-
+  const { questions } = useQuestions();
+  const selectedQuestion = questions.find((q) => q.isSelected);
+  const [question, setQuestion] = useState<Question | null>(
+    selectedQuestion ? selectedQuestion : null
+  );
 
   useEffect(() => {
     const fetchStatusAndConnect = async () => {
@@ -87,7 +94,7 @@ const ViewerPage: React.FC = () => {
           if (action.TYPE == "select_pigeon_question" && action.CONTENT) {
             setQuestion(JSON.parse(action.CONTENT));
           }
-          
+
           const component = Components.find(
             (component) => component.id === action.ID
           );
@@ -284,14 +291,16 @@ const ViewerPage: React.FC = () => {
                     setPollMode={setPollMode}
                   />
                 )}
-                {currentComponent.type == "whiteboard" && roomId && (
+                {currentComponent.type === "whiteboard" && roomId && (
                   <Whiteboard isHost={false} data={data} setData={setData} />
                 )}
-                {currentComponent.type == "pigeon-hole" && roomId && question &&(
-                  <div className="h-55">
-                    <SelectedQuestionDisplay question={question} />
-                  </div>
-                )}
+                {currentComponent.type === "pigeon-hole" &&
+                  roomId &&
+                  question && (
+                    <div className="h-55">
+                      <SelectedQuestionDisplay question={question} />
+                    </div>
+                  )}
               </div>
             ) : (
               <p className="text-gray-400">
@@ -304,15 +313,17 @@ const ViewerPage: React.FC = () => {
         {/* Right Sidebar */}
         <div className="flex-1 bg-gray-800 shadow-lg flex flex-col h-full">
           {/* Room Details Section */}
-          <div className={`transition-all duration-300 ease-in-out ${
-            isRoomDetailsExpanded ? 'h-[200px]' : 'h-[40px]'
-          }`}>
-            <div 
+          <div
+            className={`transition-all duration-300 ease-in-out ${
+              isRoomDetailsExpanded ? "h-[200px]" : "h-[40px]"
+            }`}
+          >
+            <div
               className="flex items-center justify-between px-4 py-2 cursor-pointer bg-gray-700"
               onClick={toggleRoomDetails}
             >
               <div className="flex items-center gap-2">
-                <Info className="w-5 h-5 text-blue-400" />  
+                <Info className="w-5 h-5 text-blue-400" />
                 <span className="font-semibold">Room Details</span>
               </div>
               {isRoomDetailsExpanded ? (
@@ -321,9 +332,11 @@ const ViewerPage: React.FC = () => {
                 <ChevronDown className="w-5 h-5" />
               )}
             </div>
-            <div className={`overflow-hidden transition-all duration-300 ${
-              isRoomDetailsExpanded ? 'h-[calc(200px-40px)]' : 'h-0'
-            }`}>
+            <div
+              className={`overflow-hidden transition-all duration-300 ${
+                isRoomDetailsExpanded ? "h-[calc(200px-40px)]" : "h-0"
+              }`}
+            >
               <ScrollArea className="h-full">
                 <RoomDetailsComponent />
               </ScrollArea>
