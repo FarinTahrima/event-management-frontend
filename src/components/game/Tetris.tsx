@@ -172,30 +172,73 @@ const TetrisGame: React.FC = () => {
     <div 
       ref={gameContainerRef}
       tabIndex={0}
-      className="flex flex-col items-center justify-center min-h-screen bg-gray-100"
+      className="min-h-screen bg-gradient-to-b from-navy-800 to-navy-900 py-8 font-mono"
       onKeyDown={handleKeyPress}
     >
-      <div className="mb-4 text-2xl font-bold">Score: {score}</div>
-      <div className="grid grid-cols-10 gap-px bg-gray-300 p-1">
-        {board.map((row, y) =>
-          row.map((cell, x) => (
-            <div
-              key={`${y}-${x}`}
-              className={`w-6 h-6 ${
-                cell || (currentPiece[y - position.y]?.[x - position.x])
-                  ? 'bg-blue-500'
-                  : 'bg-white'
-              }`}
-            />
-          ))
+      <div className="max-w-6xl mx-auto px-4">
+        {/* Title Section */}
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-yellow-300 mb-4 tracking-wider border-b-4 border-yellow-300 pb-2 inline-block">
+            🎮 TETRIS 🎮
+          </h1>
+          <div className="text-lg text-yellow-300 border-2 border-yellow-300 px-4 py-2 inline-block">
+            SCORE: {score}
+          </div>
+        </div>
+
+        {/* Game Board */}
+        <div className="flex justify-center">
+          <div className="game-board-container">
+            <div className="grid gap-0 bg-navy-700 p-4 rounded-lg shadow-neon">
+              {/* Game Grid */}
+              <div className="grid grid-cols-10 gap-px">
+                {board.map((row, y) =>
+                  row.map((cell, x) => (
+                    <div
+                      key={`${y}-${x}`}
+                      className={`
+                        w-6 h-6 border
+                        ${cell || (currentPiece[y - position.y]?.[x - position.x])
+                          ? 'bg-green-400 border-green-300 shadow-neon-cell'
+                          : 'bg-navy-800 border-green-400/20'}
+                        transition-all duration-150
+                      `}
+                    />
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Controls Info */}
+        <div className="mt-8 text-center text-green-400">
+          <p className="mb-2">CONTROLS</p>
+          <div className="flex justify-center gap-4">
+            <span>⬅️ Move Left</span>
+            <span>➡️ Move Right</span>
+            <span>⬇️ Move Down</span>
+            <span>⬆️ Rotate</span>
+          </div>
+        </div>
+
+        {/* Game Over Modal */}
+        {gameOver && (
+          <div className="fixed inset-0 bg-navy-900/90 flex items-center justify-center backdrop-blur-sm">
+            <div className="bg-navy-800 p-8 rounded-lg shadow-neon border-2 border-yellow-300 text-center">
+              <h2 className="text-2xl font-bold mb-4 text-yellow-300">GAME OVER</h2>
+              <p className="text-xl mb-4 text-green-400">Final Score: {score}</p>
+              <Button
+                onClick={resetGame}
+                className="bg-yellow-300 text-navy-900 px-6 py-2 rounded hover:bg-yellow-400 
+                         transition-all duration-200 font-bold tracking-wider"
+              >
+                PLAY AGAIN
+              </Button>
+            </div>
+          </div>
         )}
       </div>
-      {gameOver && (
-        <div className="mt-4 text-xl font-bold text-red-500">Game Over!</div>
-      )}
-      <Button onClick={resetGame} className="mt-4">
-        {gameOver ? 'Play Again' : 'Reset Game'}
-      </Button>
     </div>
   );
 };
