@@ -13,7 +13,7 @@ import {
   CardTitle,
 } from "@/components/shadcn/ui/card";
 import { Gamepad2, Dices, Grid3X3, Calculator, Clock } from "lucide-react";
-import Pong from "../components/game/Pong";
+import Battleship from "../components/game/Battleship";
 import Checkers from "../components/game/Checkers";
 import Tetris from "../components/game/Tetris";
 import Game2048 from "../components/game/2048";
@@ -125,13 +125,13 @@ const WaitingRoomPage: React.FC = () => {
           <h2 className="text-2xl font-bold mb-6 text-center">
             Play some games while you wait!
           </h2>
-          <Tabs defaultValue="pong" className="w-full">
+          <Tabs defaultValue="battleship" className="w-full">
             <TabsList className="grid w-full grid-cols-4 mb-8">
               <TabsTrigger
-                value="pong"
+                value="battleship"
                 className="text-lg flex items-center justify-center"
               >
-                <Grid3X3 className="mr-2" /> Pong
+                <Grid3X3 className="mr-2" /> Battleship
               </TabsTrigger>
               <TabsTrigger
                 value="checkers"
@@ -154,16 +154,16 @@ const WaitingRoomPage: React.FC = () => {
             </TabsList>
 
             <div className="game-content bg-gray-800 p-6 rounded-lg shadow-lg">
-              <TabsContent value="pong">
+              <TabsContent value="battleship">
                 <Card>
                   <CardHeader>
-                    <CardTitle>2 Player Pong</CardTitle>
+                    <CardTitle>AI Battleship</CardTitle>
                     <CardDescription>
-                      Classic 1 vs 1 game. Beat your opponent
+                      Classic 1 vs 1 game. Beat the AI
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <Pong />
+                    <Battleship />
                   </CardContent>
                 </Card>
               </TabsContent>

@@ -1,4 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=Abel&family=Alatsi&family=Questrial&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -178,4 +179,53 @@ body,
 
 .overflow-y-auto::-webkit-scrollbar-thumb:hover {
   background: #6B7280;
+}
+
+.game-board-container {
+  position: relative;
+  padding: 2rem;
+}
+
+/* Modify your getCellClass function to return these classes */
+.cell-empty {
+  @apply w-8 h-8 bg-transparent;
+}
+
+.cell-ship {
+  @apply w-8 h-8 bg-green-400/20;
+}
+
+.cell-hit {
+  @apply w-8 h-8 bg-red-500/50;
+}
+
+.cell-miss {
+  @apply w-8 h-8 bg-blue-500/30;
+}
+
+/* Add scanning animation */
+@keyframes scan {
+  0% {
+      background-position: 0% 0%;
+  }
+  100% {
+      background-position: 0% 100%;
+  }
+}
+
+.grid {
+  position: relative;
+  &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+          to bottom,
+          transparent 0%,
+          rgba(0, 255, 0, 0.1) 50%,
+          transparent 100%
+      );
+      animation: scan 4s linear infinite;
+      pointer-events: none;
+  }
 }

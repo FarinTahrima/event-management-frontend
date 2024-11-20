@@ -15,6 +15,7 @@ module.exports = {
       serif: ["ui-serif", "Georgia"],
       mono: ["ui-monospace", "SFMono-Regular"],
       alatsi: ["Alatsi"],
+      terminal: ["Share Tech Mono", "monospace"],
     },
     container: {
       center: true,
@@ -58,11 +59,19 @@ module.exports = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        navy: {
+          700: '#1a2a3a',
+          800: '#0a1a2a',
+          900: '#051015',
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+      },
+      boxShadow: {
+        'neon': '0 0 5px theme("colors.green.400"), 0 0 20px theme("colors.green.400")',
       },
       keyframes: {
         "accordion-down": {
@@ -73,12 +82,20 @@ module.exports = {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
+        "scan": {
+          "0%": { backgroundPosition: "0% 0%" },
+          "100%": { backgroundPosition: "0% 100%" },
+        }
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "scan": "scan 4s linear infinite",
       },
     },
   },
-  plugins: [require("tailwindcss-animate"),require('daisyui')],
+  plugins: [
+    require("tailwindcss-animate"),
+    require('daisyui')
+  ],
 };
