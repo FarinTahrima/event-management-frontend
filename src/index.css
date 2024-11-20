@@ -219,12 +219,6 @@ body,
       content: '';
       position: absolute;
       inset: 0;
-      background: linear-gradient(
-          to bottom,
-          transparent 0%,
-          rgba(0, 255, 0, 0.1) 50%,
-          transparent 100%
-      );
       animation: scan 4s linear infinite;
       pointer-events: none;
   }
