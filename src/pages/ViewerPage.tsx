@@ -15,7 +15,7 @@ import { ModuleAction, videoSource, WhiteboardAction } from "./EventPage";
 import { ComponentItem, Components, Poll } from "../data/componentData";
 import { getCurrentModule, getStreamStatus } from "@/utils/api-client";
 import VideoJSSynced from "@/components/VideoJSSynced";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useAppContext } from "@/contexts/AppContext";
 import PollComponent from "./components/PollComponent";
 import QuestionComponent from "./components/QuestionComponent";
@@ -60,18 +60,72 @@ const ViewerPage: React.FC = () => {
     selectedQuestion ? selectedQuestion : null
   );
 
+  // Handler for module actions that considers stream status
+  const handleModuleAction = useCallback(
+    (action: ModuleAction) => {
+      console.log("Received ModuleAction:", action);
+
+      if (action.TYPE === "poll_result" && action.CONTENT) {
+        setPoll(JSON.parse(action.CONTENT));
+        setPollMode("result");
+      }
+
+      if (action.TYPE === "poll_view" && action.CONTENT) {
+        setPoll(JSON.parse(action.CONTENT));
+        setPollMode("vote");
+      }
+
+      if (action.TYPE === "select_pigeon_question" && action.CONTENT) {
+        setQuestion(JSON.parse(action.CONTENT));
+      }
+
+      // Only update currentComponent if stream is live
+      console.log("action.IS_LIVE (handleModuleAction): ", action.IS_LIVE);
+      if (action.IS_LIVE) {
+        const component = Components.find(
+          (component) => component.id === action.ID
+        );
+        console.log(component);
+
+        if (component) {
+          if (action.TYPE.startsWith("slide") && action.CONTENT) {
+            console.log(JSON.parse(action.CONTENT));
+            setCurrentComponent({
+              ...component,
+              content: component.content ?? "",
+              currentImageIndex: JSON.parse(action.CONTENT).slideIndex,
+            });
+          } else {
+            setCurrentComponent({
+              ...component,
+              content: component.content ?? "",
+            });
+          }
+        }
+      }
+    },
+    [streamStatus.isLive]
+  );
+
   useEffect(() => {
     const fetchStatusAndConnect = async () => {
       try {
-        const currentModule: ModuleAction = await getCurrentModule(roomID);
-        const component = Components.find(
-          (component) => component.id === currentModule.ID
+        console.log(
+          "streamStatus.isLive-2 (fetchStatus): ",
+          streamStatus.isLive
         );
-        if (component) {
-          setCurrentComponent({
-            ...component,
-            content: component.content ?? "",
-          });
+        // Only fetch and set initial module if stream is live
+        if (streamStatus.isLive) {
+          const currentModule: ModuleAction = await getCurrentModule(roomID);
+          const component = Components.find(
+            (component) => component.id === currentModule.ID
+          );
+          if (component) {
+            setCurrentComponent({
+              ...component,
+              content: component.content ?? "",
+            });
+          }
         }
       } catch (error) {
         console.error("Error fetching current module:", error);
@@ -79,42 +133,7 @@ const ViewerPage: React.FC = () => {
 
       const cleanupWebSocket = ModuleConnection({
         roomID: roomID,
-        onReceived: (action: ModuleAction) => {
-          console.log("Received ModuleAction:", action);
-
-          if (action.TYPE == "poll_result" && action.CONTENT) {
-            setPoll(JSON.parse(action.CONTENT));
-            setPollMode("result");
-          }
-
-          if (action.TYPE == "poll_view" && action.CONTENT) {
-            setPoll(JSON.parse(action.CONTENT));
-            setPollMode("vote");
-          }
-          if (action.TYPE == "select_pigeon_question" && action.CONTENT) {
-            setQuestion(JSON.parse(action.CONTENT));
-          }
-
-          const component = Components.find(
-            (component) => component.id === action.ID
-          );
-          console.log(component, "comp");
-          if (component) {
-            if (action.TYPE.startsWith("slide") && action.CONTENT) {
-              console.log(JSON.parse(action.CONTENT));
-              setCurrentComponent({
-                ...component,
-                content: component.content ?? "",
-                currentImageIndex: JSON.parse(action.CONTENT).slideIndex,
-              });
-            } else {
-              setCurrentComponent({
-                ...component,
-                content: component.content ?? "",
-              });
-            }
-          }
-        },
+        onReceived: handleModuleAction,
         goLive: (isLive: boolean) => {
           console.log(isLive);
         },
@@ -122,8 +141,9 @@ const ViewerPage: React.FC = () => {
 
       return cleanupWebSocket;
     };
+
     fetchStatusAndConnect();
-  }, [roomId]);
+  }, [roomId, handleModuleAction, streamStatus.isLive]);
 
   useEffect(() => {
     let cleanupFunction: (() => void) | undefined;
@@ -131,11 +151,17 @@ const ViewerPage: React.FC = () => {
     const fetchStreamData = async () => {
       try {
         const currentStatus = await getStreamStatus(roomID);
+        console.log(currentStatus);
         setStreamStatus({
-          isLive: currentStatus.isLive,
+          isLive: currentStatus.isLive || currentStatus.live,
           viewerCount: currentStatus.viewerCount,
           roomId: roomID,
         });
+
+        // Clear currentComponent if stream is not live
+        if (!currentStatus.isLive) {
+          setCurrentComponent(null);
+        }
       } catch (error) {
         console.error("Error fetching stream data:", error);
       }
@@ -148,6 +174,8 @@ const ViewerPage: React.FC = () => {
             setStreamStatus((prev) => ({ ...prev, isLive: true }));
           } else if (status.TYPE === "STOP_STREAM") {
             setStreamStatus((prev) => ({ ...prev, isLive: false }));
+            // Clear currentComponent when stream stops
+            setCurrentComponent(null);
           } else if (
             status.TYPE === "VIEWER_JOIN" ||
             status.TYPE === "VIEWER_LEAVE"
@@ -221,6 +249,7 @@ const ViewerPage: React.FC = () => {
       SENDER: user?.username ?? "",
       TIMESTAMP: new Date().toISOString(),
       CONTENT: pollId + "_" + optionId,
+      IS_LIVE: streamStatus.isLive,
     });
   };
 
@@ -277,7 +306,7 @@ const ViewerPage: React.FC = () => {
                     options={videoJSOptions}
                     roomID={roomId ?? ""}
                     isHost={false}
-                    className="w-full h-full max-w-full max-h-full flex justify-center items-center py-4"
+                    className="w-full h-full flex justify-center items-center py-4"
                   />
                 )}
                 {currentComponent.type === "poll" && roomId && (

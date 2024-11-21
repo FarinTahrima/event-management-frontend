@@ -50,6 +50,7 @@ export interface ModuleAction {
   TIMESTAMP: string;
   CONTENT?: string;
   slideIndex?: number;
+  IS_LIVE: boolean;
 }
 
 export interface WhiteboardAction {
@@ -61,8 +62,7 @@ export interface WhiteboardAction {
   LINE_WIDTH?: number;
 }
 
-export const videoSource =
-  "http://localhost:8080/encoded/steamboatwillie_001/master.m3u8";
+export const videoSource = "http://localhost:8080/encoded/laptop/master.m3u8";
 
 const videoJSOptions = {
   sources: [
@@ -168,6 +168,7 @@ const EventPage: React.FC = () => {
       SESSION_ID: roomId ?? "",
       SENDER: user?.username ?? "",
       TIMESTAMP: new Date().toISOString(),
+      IS_LIVE: streamStatus.isLive,
     });
   };
 
@@ -188,6 +189,7 @@ const EventPage: React.FC = () => {
         SESSION_ID: roomId ?? "",
         SENDER: user?.username ?? "",
         TIMESTAMP: new Date().toISOString(),
+        IS_LIVE: streamStatus.isLive,
       });
       return;
     }
@@ -226,6 +228,7 @@ const EventPage: React.FC = () => {
       SENDER: user?.username ?? "",
       TIMESTAMP: new Date().toISOString(),
       CONTENT: JSON.stringify(Poll),
+      IS_LIVE: streamStatus.isLive,
     });
   };
 
@@ -238,6 +241,7 @@ const EventPage: React.FC = () => {
       SENDER: user?.username ?? "",
       TIMESTAMP: new Date().toISOString(),
       CONTENT: JSON.stringify(Poll),
+      IS_LIVE: streamStatus.isLive,
     });
   };
 
@@ -260,6 +264,7 @@ const EventPage: React.FC = () => {
       SENDER: user?.username ?? "",
       TIMESTAMP: new Date().toISOString(),
       CONTENT: JSON.stringify(question),
+      IS_LIVE: streamStatus.isLive,
     });
   };
 
@@ -334,6 +339,7 @@ const EventPage: React.FC = () => {
                                   CONTENT: JSON.stringify({
                                     slideIndex: index,
                                   }),
+                                  IS_LIVE: streamStatus.isLive,
                                 });
                               }}
                             />
