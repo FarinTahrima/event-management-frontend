@@ -1,16 +1,10 @@
 import React from "react";
-import {
-  Image,
-  FileVideo,
-  Radio,
-  BarChart2,
-  Box,
-  Bird,
-  Presentation,
-} from "lucide-react";
+import {Image,FileVideo,Radio,BarChart2,Box,Bird,Presentation} from "lucide-react";
 import VideoRecorder from "../pages/VideoRecorder";
 import ViewOnlyModelViewer from "@/pages/ModelViewer/ViewOnlyModelViewer";
 import { PollResponse } from "@/pages/host/HostCreatePoll";
+
+export type ComponentLink = string | ((roomId: string) => string);
 
 export interface ComponentItem {
   id: string;
@@ -20,7 +14,7 @@ export interface ComponentItem {
   content?: string;
   imageUrl?: string;
   htmlContent?: React.ReactNode;
-  link: string;
+  getLink: ComponentLink; 
   images?: string[];
   currentImageIndex?: number;
 }
@@ -66,18 +60,17 @@ export const Components: ComponentItem[] = [
       "https://picsum.photos/id/0/800/400",
       "https://picsum.photos/id/1/800/400",
       "https://picsum.photos/id/2/800/400",
-      // Add more images as needed
     ],
     currentImageIndex: 0,
-    link: "/slide",
+    getLink: "/slide",
   },
   {
     id: "2",
     type: "video",
     title: "Demo Video",
     icon: <FileVideo className="w-6 h-6" />,
-    content: "Demo Video",
-    link: "/record",
+    getLink: (roomId: string) => `/record/${roomId}`,
+    htmlContent: null,
   },
   {
     id: "3",
@@ -85,7 +78,7 @@ export const Components: ComponentItem[] = [
     title: "Live Webcam",
     icon: <Radio className="w-6 h-6" />,
     content: "See it Live",
-    link: "/live",
+    getLink: "/live",
     htmlContent: <VideoRecorder viewOnly />,
   },
   {
@@ -94,7 +87,7 @@ export const Components: ComponentItem[] = [
     title: "Poll",
     icon: <BarChart2 className="w-6 h-6" />,
     content: "Create an interactive poll",
-    link: "/poll/:roomId",
+    getLink: (roomId: string) => `/poll/${roomId}`,
     htmlContent: null,
   },
   {
@@ -102,7 +95,7 @@ export const Components: ComponentItem[] = [
     type: "model",
     title: "3D Model",
     icon: <Box className="w-6 h-6" />,
-    link: "/model",
+    getLink: (roomId: string) => `/model/${roomId}`,
     htmlContent: <ViewOnlyModelViewer />,
   },
   {
@@ -111,7 +104,7 @@ export const Components: ComponentItem[] = [
     title: "Pigeon Hole",
     icon: <Bird className="w-6 h-6" />,
     content: "Interactive Q&A",
-    link: "/pigeon",
+    getLink: "/pigeon",
     htmlContent: null,
   },
   {
@@ -119,7 +112,7 @@ export const Components: ComponentItem[] = [
     type: "whiteboard",
     title: "Whiteboard",
     icon: <Presentation className="w-6 h-6" />,
-    link: "/whiteboard",
+    getLink: "/whiteboard",
     htmlContent: null,
   },
 ];
