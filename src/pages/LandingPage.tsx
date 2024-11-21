@@ -213,15 +213,7 @@ const LandingPage = () => {
 
   return (
     <div className={div}>
-      <Button
-        onClick={toggleHostMode}
-        variant="ghost"
-        className="absolute top-4 right-4 text-2xl px-4 py-2 bg-white text-black rounded"
-      >
-        {showHostButtons ? "Back" : "Host"}
-      </Button>
-
-      <div className={`flex flex-col transition-all duration-300 `}>
+      <div className={`flex flex-col transition-all duration-300 text-white`}>
         <img
           src={logo}
           alt="EventHub Logo"
@@ -234,7 +226,16 @@ const LandingPage = () => {
 
         <div className="text-white">
           <div className="py-4 text-center">
-            {!showHostButtons && (
+            {optionSelected !== "join event" && !showHostButtons && (
+              <Button
+                onClick={toggleHostMode}
+                variant="ghost"
+                className={buttonTextFormat + "text-white"}
+              >
+                Host
+              </Button>
+            )}
+            {optionSelected !== "join event" && !showHostButtons && (
               <Button
                 onClick={() => handleButtonClick("join event")}
                 variant="ghost"
