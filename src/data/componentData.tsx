@@ -1,5 +1,14 @@
 import React from "react";
-import {Image,FileVideo,Radio,BarChart2,Box,Bird,Presentation} from "lucide-react";
+import {
+  Image,
+  FileVideo,
+  Radio,
+  BarChart2,
+  Box,
+  Bird,
+  Presentation,
+  MessageCircleQuestion,
+} from "lucide-react";
 import VideoRecorder from "../pages/VideoRecorder";
 import ViewOnlyModelViewer from "@/pages/ModelViewer/ViewOnlyModelViewer";
 import { PollResponse } from "@/pages/host/HostCreatePoll";
@@ -14,7 +23,7 @@ export interface ComponentItem {
   content?: string;
   imageUrl?: string;
   htmlContent?: React.ReactNode;
-  getLink: ComponentLink; 
+  getLink: ComponentLink;
   images?: string[];
   currentImageIndex?: number;
 }
@@ -98,11 +107,20 @@ export const Components: ComponentItem[] = [
     getLink: (roomId: string) => `/model/${roomId}`,
     htmlContent: <ViewOnlyModelViewer />,
   },
+  // {
+  //   id: "6",
+  //   type: "pigeon-hole",
+  //   title: "Pigeon Hole",
+  //   icon: <Bird className="w-6 h-6" />,
+  //   content: "Interactive Q&A",
+  //   getLink: "/pigeon",
+  //   htmlContent: null,
+  // },
   {
     id: "6",
     type: "pigeon-hole",
-    title: "Pigeon Hole",
-    icon: <Bird className="w-6 h-6" />,
+    title: "Live Q&A",
+    icon: <MessageCircleQuestion className="w-6 h-6" />,
     content: "Interactive Q&A",
     getLink: "/pigeon",
     htmlContent: null,

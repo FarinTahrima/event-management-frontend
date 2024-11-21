@@ -1,23 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import { Card } from "@/components/shadcn/ui/card";
 import { Button } from "@/components/shadcn/ui/button";
 import { Input } from "@/components/shadcn/ui/input";
-import { ChevronUp, MessageSquarePlus, Bird, Clock } from "lucide-react";
-import { useQuestions } from '../../contexts/QuestionContext';
+import {
+  ChevronUp,
+  MessageSquarePlus,
+  Bird,
+  Clock,
+  MessageCircleQuestion,
+} from "lucide-react";
+import { useQuestions } from "../../contexts/QuestionContext";
 
 interface QuestionComponentProps {
   isHost: boolean;
 }
 
 const QuestionComponent: React.FC<QuestionComponentProps> = ({ isHost }) => {
-  const { questions, handleVote, handleSelectQuestion, addQuestion } = useQuestions();
-  const [newQuestion, setNewQuestion] = useState('');
+  const { questions, handleVote, handleSelectQuestion, addQuestion } =
+    useQuestions();
+  const [newQuestion, setNewQuestion] = useState("");
 
   const handleSubmitQuestion = (e: React.FormEvent) => {
     e.preventDefault();
     if (newQuestion.trim()) {
       addQuestion(newQuestion.trim());
-      setNewQuestion('');
+      setNewQuestion("");
     }
   };
 
@@ -27,8 +34,9 @@ const QuestionComponent: React.FC<QuestionComponentProps> = ({ isHost }) => {
       <div className="sticky top-0 z-10 p-4 border-b border-gray-800 bg-gray-800">
         <div className="flex items-center justify-between">
           <h3 className="text-xl font-semibold flex items-center gap-2 text-white">
-            <Bird className="h-6 w-6 text-blue-400" />
-            Pigeon Hole
+            {/* <Bird className="h-6 w-6 text-blue-400" /> */}
+            <MessageCircleQuestion className="h-6 w-6 text-blue-400" />
+            Live Q&A
           </h3>
         </div>
       </div>
@@ -40,9 +48,9 @@ const QuestionComponent: React.FC<QuestionComponentProps> = ({ isHost }) => {
             <Card
               key={question.id}
               className={`p-4 transition-all duration-200 cursor-pointer ${
-                question.isSelected 
-                  ? 'bg-blue-600 hover:bg-blue-700' 
-                  : 'bg-gray-800 hover:bg-gray-700'
+                question.isSelected
+                  ? "bg-blue-600 hover:bg-blue-700"
+                  : "bg-gray-800 hover:bg-gray-700"
               }`}
               onClick={() => isHost && handleSelectQuestion(question)}
             >
@@ -51,7 +59,7 @@ const QuestionComponent: React.FC<QuestionComponentProps> = ({ isHost }) => {
                   variant={question.hasVoted ? "secondary" : "ghost"}
                   size="sm"
                   className={`flex flex-col items-center min-w-[60px] text-white ${
-                    question.hasVoted ? 'bg-blue-500 hover:bg-blue-600' : ''
+                    question.hasVoted ? "bg-blue-500 hover:bg-blue-600" : ""
                   }`}
                   onClick={(e) => {
                     e.stopPropagation();
@@ -59,7 +67,9 @@ const QuestionComponent: React.FC<QuestionComponentProps> = ({ isHost }) => {
                   }}
                 >
                   <ChevronUp className="h-5 w-5" />
-                  <span className="text-sm font-semibold">{question.votes}</span>
+                  <span className="text-sm font-semibold">
+                    {question.votes}
+                  </span>
                 </Button>
                 <div className="flex-1">
                   <p className="text-md text-white">{question.text}</p>
@@ -84,8 +94,8 @@ const QuestionComponent: React.FC<QuestionComponentProps> = ({ isHost }) => {
             placeholder="Ask a question..."
             className="flex-1 bg-gray-700 border-gray-600 focus:border-blue-500 focus:ring-blue-500"
           />
-          <Button 
-            type="submit" 
+          <Button
+            type="submit"
             className="bg-blue-600 hover:bg-blue-700 text-white"
           >
             <MessageSquarePlus className="h-5 w-5 mr-2" />
