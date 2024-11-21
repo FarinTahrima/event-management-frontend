@@ -52,7 +52,7 @@ const router = createBrowserRouter([
         element: <HostHomePage />,
       },
       {
-        path: "model",
+        path: "model/:roomId",
         element: <ModelPage />,
       },
       {
@@ -60,7 +60,7 @@ const router = createBrowserRouter([
         element: <Dashboard />,
       },
       {
-        path: "record",
+        path: "record/:roomId",
         element: <Record viewOnly={false}/>,
       },
       {

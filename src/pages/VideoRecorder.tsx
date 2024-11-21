@@ -6,6 +6,7 @@ import { Progress } from "@/components/shadcn/ui/progress";
 import { Button } from "@/components/shadcn/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/shadcn/ui/select";
 import * as faceapi from 'face-api.js';
+import { useNavigate, useParams } from 'react-router-dom';
 
 interface VideoRecorderProps {
   viewOnly: boolean
@@ -22,6 +23,8 @@ const VideoRecorder: React.FC<VideoRecorderProps> = ({viewOnly}: VideoRecorderPr
   const [mlMode, setMlMode] = useState<'expression' | 'age-gender'>('expression');
   const [mlResult, setMlResult] = useState<string | null>(null);
   const [detectionInterval] = useState(500);
+  const { roomId } = useParams();
+  const navigate = useNavigate();
   const { status, startRecording, stopRecording } = useReactMediaRecorder({
     video: true,
     audio: true,
@@ -30,8 +33,11 @@ const VideoRecorder: React.FC<VideoRecorderProps> = ({viewOnly}: VideoRecorderPr
       setRecordingDuration(0);
     },
   });
+
   const isProcessing = useRef(false);
-  const handleBack = () => {window.history.back();};
+  const handleBack = () => {
+    navigate(`/event/${roomId}`);
+  };
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -323,3 +329,4 @@ const VideoRecorder: React.FC<VideoRecorderProps> = ({viewOnly}: VideoRecorderPr
 };
 
 export default VideoRecorder;
+

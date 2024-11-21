@@ -495,15 +495,18 @@ const EventPage: React.FC = () => {
                                   )}
                                 </div>
                                 <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    navigate(item.link);
-                                  }}
-                                  className="ml-2"
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        const finalLink = typeof item.getLink === 'function' 
+                                            ? item.getLink(roomId ?? "") 
+                                            : item.getLink;
+                                        navigate(finalLink);
+                                    }}
+                                    className="ml-2"
                                 >
-                                  <ExternalLink className="w-4 h-4" />
+                                    <ExternalLink className="w-4 h-4" />
                                 </Button>
                                 <Button
                                   size="sm"

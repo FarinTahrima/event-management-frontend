@@ -8,6 +8,7 @@ import { RotateCw, ZoomIn, ZoomOut, Sun, Moon, Maximize2, ArrowLeft } from 'luci
 import ModelManager from './ModelViewer/ModelManager';
 import { ModelConfig } from '@/types/components';
 import { useState, useEffect, Suspense } from 'react';
+import { useParams , useNavigate } from 'react-router-dom';
 
 function Model({ url, scale = 1 }: { url: string; scale?: number }) {
   const { scene } = useGLTF(url);
@@ -19,10 +20,15 @@ const ModelViewer = () => {
   const [backgroundColor, setBackgroundColor] = useState<string>('#ffffff');
   const [modelScale, setModelScale] = useState(1);
   const [autoRotate, setAutoRotate] = useState(false);
+  const { roomId } = useParams();
+  const navigate = useNavigate();
   const [lightIntensity, setLightIntensity] = useState(0.5);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [modelData, setModelData] = useState<string>('');
 
+  const handleBack = () => {
+    navigate(`/event/${roomId}`);
+  };
 
   useEffect(() => {
     if (modelData) {
@@ -96,7 +102,7 @@ const ModelViewer = () => {
     <div className="bg-gray-900 flex min-h-screen bg-gray-100 p-4">
       {/* Back Button */}
       <Button
-        onClick={() => window.history.back()}
+        onClick={handleBack}
         className="absolute top-4 left-4 bg-white text-black hover:bg-gray-200 shadow-lg rounded-lg px-4 py-2 transition-all duration-200 border border-gray-200 z-10"
       >
         <ArrowLeft className="w-5 h-5 mr-2" />
