@@ -221,11 +221,7 @@ const LandingPage = () => {
         {showHostButtons ? "Back" : "Host"}
       </Button>
 
-      <div
-        className={`flex flex-col transition-all duration-300 ${
-          optionSelected === null ? "" : "scale-90"
-        }`}
-      >
+      <div className={`flex flex-col transition-all duration-300 `}>
         <img
           src={logo}
           alt="EventHub Logo"
