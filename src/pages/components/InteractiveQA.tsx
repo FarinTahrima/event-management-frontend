@@ -6,7 +6,7 @@ import { ScrollArea } from "@/components/shadcn/ui/scroll-area";
 import { ChevronUp, Clock, Trash2, CheckCircle, XCircle } from "lucide-react";
 import { Question } from '../../types/types';
 
-interface PigeonProps {
+interface InteractiveQAProps {
     sendSelectQuestionAction?: (question: Question) => void;
 }
 
@@ -40,7 +40,7 @@ export const SelectedQuestionDisplay: React.FC<{ question: Question | null }> = 
     );
 };
 
-const PigeonComponent: React.FC<PigeonProps> = ({sendSelectQuestionAction}) => {
+const InteractiveQAComponent: React.FC<InteractiveQAProps> = ({sendSelectQuestionAction}) => {
     const { 
         questions, 
         moderatedQuestions,
@@ -51,11 +51,10 @@ const PigeonComponent: React.FC<PigeonProps> = ({sendSelectQuestionAction}) => {
     } = useQuestions();
     
     const selectedQuestion = questions.find(q => q.isSelected) || null;
-
+    
     function selectQuestion(question: Question) {
         handleSelectQuestion(question);
         if(sendSelectQuestionAction) sendSelectQuestionAction(question);
-        // localStorage.setItem("selectedQuestionId", question.id);
     }
 
     return (
@@ -166,4 +165,4 @@ const PigeonComponent: React.FC<PigeonProps> = ({sendSelectQuestionAction}) => {
     );
 };
 
-export default PigeonComponent;
+export default InteractiveQAComponent;

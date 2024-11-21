@@ -18,12 +18,12 @@ import VideoJSSynced from "@/components/VideoJSSynced";
 import { useCallback, useEffect, useState } from "react";
 import { useAppContext } from "@/contexts/AppContext";
 import PollComponent from "./components/PollComponent";
-import QuestionComponent from "./components/QuestionComponent";
+import ViewerSideQuestionComponent from "./components/ViewerSideQuestionComponent";
 import Whiteboard, { WhiteBoardData } from "./components/Whiteboard";
 import SlideShow from "./components/SlideShow";
 import { Question } from "@/types/types";
 import { useQuestions } from "@/contexts/QuestionContext";
-import { SelectedQuestionDisplay } from "./components/PigeonComponent";
+import { SelectedQuestionDisplay } from "./components/InteractiveQA";
 import { ChevronUp, ChevronDown, Info } from "lucide-react";
 
 interface StreamStatus {
@@ -75,7 +75,7 @@ const ViewerPage: React.FC = () => {
         setPollMode("vote");
       }
 
-      if (action.TYPE === "select_pigeon_question" && action.CONTENT) {
+      if (action.TYPE === "select_interactive_question" && action.CONTENT) {
         setQuestion(JSON.parse(action.CONTENT));
       }
 
@@ -110,15 +110,16 @@ const ViewerPage: React.FC = () => {
   useEffect(() => {
     const fetchStatusAndConnect = async () => {
       try {
-        console.log(
-          "streamStatus.isLive-2 (fetchStatus): ",
-          streamStatus.isLive
-        );
+        
         // Only fetch and set initial module if stream is live
         if (streamStatus.isLive) {
           const currentModule: ModuleAction = await getCurrentModule(roomID);
           const component = Components.find(
             (component) => component.id === currentModule.ID
+          );
+          console.log(
+            "currentModule: ",
+            currentModule
           );
           if (component) {
             setCurrentComponent({
@@ -323,7 +324,7 @@ const ViewerPage: React.FC = () => {
                 {currentComponent.type === "whiteboard" && roomId && (
                   <Whiteboard isHost={false} data={data} setData={setData} />
                 )}
-                {currentComponent.type === "pigeon-hole" &&
+                {currentComponent.type === "interactive-qa" &&
                   roomId &&
                   question && (
                     <div className="h-55">
@@ -376,7 +377,7 @@ const ViewerPage: React.FC = () => {
           <div className="flex-1 border-y border-gray-700 overflow-hidden flex flex-col">
             <div className="flex-1 overflow-hidden">
               <ScrollArea className="h-full">
-                <QuestionComponent isHost={false} />
+                <ViewerSideQuestionComponent isLive={streamStatus.isLive} selectedQuestion={question} />
               </ScrollArea>
             </div>
           </div>

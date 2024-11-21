@@ -33,7 +33,7 @@ import { Components, ComponentItem, Poll } from "@/data/componentData";
 import PollComponent from "./components/PollComponent";
 import SlideShow from "./components/SlideShow";
 import Whiteboard, { WhiteBoardData } from "./components/Whiteboard";
-import PigeonComponent from "./components/PigeonComponent";
+import InteractiveQAComponent from "./components/InteractiveQA";
 import { Question } from "@/types/types";
 
 interface StreamStatus {
@@ -256,10 +256,10 @@ const EventPage: React.FC = () => {
     });
   };
 
-  const sendActionForPigeonSelectQuestion = (question: Question) => {
+  const sendActionForInteractiveQASelectQuestion = (question: Question) => {
     sendModuleAction({
       ID: "64",
-      TYPE: "select_pigeon_question",
+      TYPE: "select_interactive_question",
       SESSION_ID: roomId ?? "",
       SENDER: user?.username ?? "",
       TIMESTAMP: new Date().toISOString(),
@@ -384,10 +384,10 @@ const EventPage: React.FC = () => {
                           sendActionForWhiteboard={sendActionForWhiteboard}
                         />
                       )}
-                      {currentComponent.type === "pigeon-hole" && roomId && (
-                        <PigeonComponent
+                      {currentComponent.type === "interactive-qa" && roomId && (
+                        <InteractiveQAComponent
                           sendSelectQuestionAction={
-                            sendActionForPigeonSelectQuestion
+                            sendActionForInteractiveQASelectQuestion
                           }
                         />
                       )}

@@ -1,5 +1,5 @@
 import React from "react";
-import {Image,FileVideo,Radio,BarChart2,Box,Bird,Presentation} from "lucide-react";
+import {Image,FileVideo,Radio,BarChart2,Box,Presentation, MessageCircleQuestion} from "lucide-react";
 import VideoRecorder from "../pages/VideoRecorder";
 import ViewOnlyModelViewer from "@/pages/ModelViewer/ViewOnlyModelViewer";
 import { PollResponse } from "@/pages/host/HostCreatePoll";
@@ -21,29 +21,29 @@ export interface ComponentItem {
 
 export const Poll: PollResponse = {
   pollId: 1,
-  pollQuestion: "Which device are you using?",
+  pollQuestion: "Which laptop do you use?",
   pollOptionList: [
     {
       pollOptionId: 1,
-      value: "Apple",
+      value: "Acer",
       description: "",
-      imageUrl: "1-1-Apple.jpg",
+      imageUrl: "Acer.jpg",
       voteCount: 0,
     },
     {
       pollOptionId: 2,
-      value: "Windows",
+      value: "Lenovo",
       description: "",
-      imageUrl: "1-2-windows.png",
+      imageUrl: "Lenovo.jpg",
       voteCount: 0,
     },
     {
       pollOptionId: 3,
-      value: "Blueberry",
+      value: "Mac",
       description: "",
-      imageUrl: "1-3-blueberry.jpeg",
+      imageUrl: "Mac.jpg",
       voteCount: 0,
-    },
+    }
   ],
   voted: false,
   selectedPollOption: null,
@@ -100,11 +100,11 @@ export const Components: ComponentItem[] = [
   },
   {
     id: "6",
-    type: "pigeon-hole",
-    title: "Pigeon Hole",
-    icon: <Bird className="w-6 h-6" />,
+    type: "interactive-qa",
+    title: "Q&A",
+    icon: <MessageCircleQuestion className="w-6 h-6" />,
     content: "Interactive Q&A",
-    getLink: "/pigeon",
+    getLink: "/interactive-qa",
     htmlContent: null,
   },
   {
