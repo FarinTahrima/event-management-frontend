@@ -107,14 +107,15 @@ export const QuestionProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             };
 
             if (status === 'approved') {
-                setQuestions(prev => [...prev, newQuestion]);
+                setQuestions(prev => [...prev, { ...newQuestion }]);
             } else {
-                setModeratedQuestions(prev => [...prev, newQuestion]);
+                setModeratedQuestions(prev => [...prev, { ...newQuestion, moderationStatus: 'flagged' }]);
             }
         } catch (error) {
             console.error("Error adding question:", error);
         }
     };
+
 
     const deleteQuestion = (questionId: string) => {
         setQuestions(prev => prev.filter(q => q.id !== questionId));

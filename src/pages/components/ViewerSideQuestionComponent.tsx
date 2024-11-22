@@ -1,25 +1,78 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card } from "@/components/shadcn/ui/card";
 import { Button } from "@/components/shadcn/ui/button";
 import { Input } from "@/components/shadcn/ui/input";
 import { ChevronUp, MessageSquarePlus, Clock, MessageCircleQuestion } from "lucide-react";
 import { useQuestions } from '../../contexts/QuestionContext';
+import { Question } from '@/types/types';
+import { InteractiveQAAction, InteractiveQAConnection, sendInteractiveQAAction } from '@/utils/messaging-client';
 
 interface QuestionComponentProps {
   isLive: boolean;
+  roomId: string;
 }
 
-const ViewerSideQuestionComponent: React.FC<QuestionComponentProps> = ({ isLive }) => {
+const ViewerSideQuestionComponent: React.FC<QuestionComponentProps> = ({ isLive, roomId }) => {
   const { questions, handleVote, addQuestion } = useQuestions();
   const [newQuestion, setNewQuestion] = useState('');
+  const [questionList, setQuestionList] = useState<Question[]>(questions);
+
+  useEffect(() => {
+    const cleanupWebSocket = InteractiveQAConnection({
+      roomID: roomId ?? "",
+      onReceived: (action: InteractiveQAAction) => {
+        console.log("Received Action:", action);
+        if (action.TYPE === "select_interactive_question" && action.QUESTION) {
+            // setSelectedQuestion(JSON.parse(action.QUESTION));
+            console.log("viewer side received", action);
+        }
+        // if (action.TYPE === "send_question_to_host") {
+        //     let random = localStorage.getItem("moderatedQuestions");
+        //     console.log(random, "modques");
+        // }
+      }
+    });
+    return cleanupWebSocket;
+  }, [roomId]);
 
   const handleSubmitQuestion = (e: React.FormEvent) => {
     e.preventDefault();
     if (newQuestion.trim()) {
       addQuestion(newQuestion.trim());
       setNewQuestion('');
+      sendInteractiveQAAction({
+        SESSION_ID: roomId,
+        TYPE: "send_question_to_host"
+      });
     }
   };
+
+  useEffect(() => {
+    console.log("questions view", questions);
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.storageArea === localStorage && event.key === "questions") {
+        try {
+          if (event.newValue) {
+            const list: Question[] = JSON.parse(event.newValue);
+            setQuestionList(list);
+          } else {
+            console.log("Storage key cleared or empty");
+            setQuestionList([]); // Reset to an empty array if value is cleared
+          }
+        } catch (error) {
+          console.error("Error parsing storage data:", error);
+        }
+      }
+    };
+
+    // Attach the storage event listener
+    window.addEventListener('storage', handleStorageChange);
+
+    // Cleanup on component unmount
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, [questions]); // Runs once when the component mounts
 
   return (
     <div className="flex flex-col h-full relative">
@@ -44,7 +97,7 @@ const ViewerSideQuestionComponent: React.FC<QuestionComponentProps> = ({ isLive 
       {isLive &&
           <div className="flex-1 overflow-y-auto">
           <div className="space-y-3 p-4">
-            {questions.map((question) => (
+            {questionList.map((question) => (
               <Card
                 key={question.id}
                 className={`p-4 transition-all duration-200 cursor-pointer ${

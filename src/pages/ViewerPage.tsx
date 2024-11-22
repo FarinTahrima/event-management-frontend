@@ -23,7 +23,7 @@ import PollComponent from "./components/PollComponent";
 import ViewerSideQuestionComponent from "./components/ViewerSideQuestionComponent";
 import Whiteboard, { WhiteBoardData } from "./components/Whiteboard";
 import SlideShow from "./components/SlideShow";
-import InteractiveQAComponent from "./components/InteractiveQA";
+import { SelectedQuestionDisplay } from "./components/InteractiveQA";
 import { ChevronUp, ChevronDown, Info } from "lucide-react";
 
 const ViewerPage: React.FC = () => {
@@ -304,7 +304,7 @@ const ViewerPage: React.FC = () => {
                 {currentComponent.type === "interactive-qa" &&
                   roomId && (
                     <div className="h-55">
-                      <InteractiveQAComponent roomId={roomID} isHost={false} />
+                      <SelectedQuestionDisplay isHost={false} />
                     </div>
                   )}
               </div>
@@ -351,7 +351,7 @@ const ViewerPage: React.FC = () => {
 
           {/* Questions Section - Fixed height */}
           <div className="min-h-[26rem] border-y border-gray-700">
-            <ViewerSideQuestionComponent isLive={streamStatus.isLive} />
+            <ViewerSideQuestionComponent isLive={streamStatus.isLive} roomId={roomID}/>
           </div>
 
           {/* Live Chat Section - Takes remaining space */}

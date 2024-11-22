@@ -12,7 +12,53 @@ interface InteractiveQAProps {
     isHost: boolean;
 }
 
-export const SelectedQuestionDisplay: React.FC<{ question: Question | undefined }> = ({ question }) => {
+interface SelectedQuestionProps {
+    isHost: boolean;
+    selectedQuestion?: Question;
+    setSelectedQuestion?: (selectedQuestion: Question) => void;
+}
+
+export const SelectedQuestionDisplay: React.FC<SelectedQuestionProps> = ({isHost, selectedQuestion}) => {
+    const { 
+        questions
+    } = useQuestions();
+
+    console.log("status", isHost + "_" + selectedQuestion?.text);
+
+    const selectedQuestionId = localStorage.getItem("selected_question_id");
+    const selQues = questions.find((q => q.id === selectedQuestionId));
+    const [question, setQuestion] = useState(isHost ? selectedQuestion : selQues);
+    
+    useEffect(() => {
+        const handleStorageChange = (event: StorageEvent) => {
+          if (event.storageArea === localStorage && event.key === "selected_question_id" && !isHost) {
+            try {
+              if (event.newValue) {
+                const selectedQuestionId = localStorage.getItem("selected_question_id");
+                const selectedQues = questions.find((q => q.id === selectedQuestionId));
+                setQuestion(selectedQues);
+              }
+            } catch (error) {
+              console.error("Error parsing storage data:", error);
+            }
+          }
+        };
+    
+        // Attach the storage event listener
+        window.addEventListener('storage', handleStorageChange);
+    
+        // Cleanup on component unmount
+        return () => {
+          window.removeEventListener('storage', handleStorageChange);
+        };
+      }, [questions]); // Runs once when the component mounts
+
+      useEffect(() => {
+        // update changed selected question
+        if (isHost) {
+            setQuestion(selectedQuestion);
+        }
+      }, [selectedQuestion]);
     
     if (!question) {
         return (
@@ -43,31 +89,51 @@ export const SelectedQuestionDisplay: React.FC<{ question: Question | undefined 
     );
 };
 
-const InteractiveQAComponent: React.FC<InteractiveQAProps> = ({roomId, isHost}) => {
+const InteractiveQAComponent: React.FC<InteractiveQAProps> = ({roomId}) => {
     const { 
         questions, 
         moderatedQuestions,
         handleVote, 
         handleSelectQuestion, 
         deleteQuestion,
-        approveQuestion 
+        approveQuestion
     } = useQuestions();
 
     const selectedQuestionId = localStorage.getItem("selected_question_id");
     const savedSelectedQuestion = questions.find((q => q.id === selectedQuestionId));
-    const [selectedQuestion, setSelectedQuestion] = useState<Question|undefined>(savedSelectedQuestion);
+    const [selectedQuestion, setSelectedQuestion] = useState(savedSelectedQuestion);
+    let modQues = moderatedQuestions;
     
     useEffect(() => {
         const cleanupWebSocket = InteractiveQAConnection({
           roomID: roomId ?? "",
           onReceived: (action: InteractiveQAAction) => {
             console.log("Received Action:", action);
-            setSelectedQuestion(JSON.parse(action.QUESTION));
+            // if (action.TYPE === "select_interactive_question" && action.QUESTION) {
+            //     setSelectedQuestion(JSON.parse(action.QUESTION));
+            // }
+            if (action.TYPE === "send_question_to_host") {
+                // let random = localStorage.getItem("moderatedQuestions");
+                // console.log(random, "modques");
+                console.log("interactive received", action);
+            }
           }
         });
         return cleanupWebSocket;
       }, [roomId]);
 
+    //   useEffect(() => {
+    //     console.log(moderatedQuestions, "mq");
+    //   }, [moderatedQuestions]);
+
+    useEffect(() => {
+        // update changed selected question
+        const ques = questions.find(q => q.isSelected);
+        console.log("new sel ques", ques);
+        setSelectedQuestion(ques);
+      }, [questions]);
+
+    
     function selectQuestion(question: Question) {
         handleSelectQuestion(question);
         sendInteractiveQAAction({
@@ -78,12 +144,6 @@ const InteractiveQAComponent: React.FC<InteractiveQAProps> = ({roomId, isHost}) 
         localStorage.setItem("selected_question_id" , question.id);
     }
 
-    if (!isHost) {
-        return (
-            <SelectedQuestionDisplay question={selectedQuestion} />
-        )
-    }
-
     return (
         <div className="flex justify-center items-center w-full h-full">
             <div className="flex flex-1 gap-4 mt-8">
@@ -91,18 +151,18 @@ const InteractiveQAComponent: React.FC<InteractiveQAProps> = ({roomId, isHost}) 
                 <div className="w-1/2 flex flex-col gap-4">
                     {/* Selected Question */}
                     <div className="flex-1">
-                        <SelectedQuestionDisplay question={selectedQuestion} />
+                        <SelectedQuestionDisplay isHost selectedQuestion={selectedQuestion}/>
                     </div>
 
                     {/* Review Section */}
-                    {moderatedQuestions.length > 0 && (
+                    {modQues.length > 0 && (
                         <div className="h-1/3 min-h-[200px]">
                             <h2 className="text-xl font-semibold mb-3 text-yellow-400">
                                 Questions Requiring Review
                             </h2>
                             <ScrollArea className="h-[calc(100%-2rem)] bg-gray-800 rounded-lg p-4">
                                 <div className="space-y-3">
-                                    {moderatedQuestions.map((question) => (
+                                    {modQues.map((question) => (
                                         <Card
                                             key={question.id}
                                             className="p-4 bg-gray-700 border-l-4 border-yellow-400"

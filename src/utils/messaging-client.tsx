@@ -43,7 +43,8 @@ export interface WhiteboardAction {
 export interface InteractiveQAAction {
   SESSION_ID: string;
   TYPE: string;
-  QUESTION: string;
+  QUESTION?: string;
+  TEXT?: string
 }
 
 export interface LivePollAction {
@@ -398,42 +399,6 @@ export const sendWhiteboardAction = async (action: WhiteboardAction) => {
   }
 };
 
-// export const InteractiveQAConnection = (options: InteractiveQAClientOptions) => {
-//   const { roomID, onReceived } = options;
-
-//   if (!interactiveQAClient || !interactiveQAClient.connected) {
-//     interactiveQAClient = Stomp.over(
-//       () => new SockJS(`http://localhost:8080/interactiveQAAction?roomID=${roomID}`)
-//     );
-//     interactiveQAClient.reconnectDelay = 5000;
-
-//     interactiveQAClient.connect(
-//       {},
-//       () => {
-//         const topic = `/topic/interactiveQAAction/${roomID}`;
-//         console.log(`Connected and subscribed to: ${topic}`);
-//         interactiveQAClient.subscribe(topic, (message: any) => {
-//           console.log(message);
-//           const newAction = JSON.parse(message.body);
-//           console.log(`New interactiveQAAction received: ${newAction.TYPE}`);
-//           onReceived(newAction);
-//         });
-//       },
-//       (error: Error) => {
-//         console.error("WebSocket connection error:", error);
-//       }
-//     );
-//   }
-
-//   return () => {
-//     if (interactiveQAClient && interactiveQAClient.connected) {
-//       interactiveQAClient.disconnect(() =>
-//         console.log("Disconnected from WebSocket - interactiveQAClient")
-//       );
-//       interactiveQAClient = null;
-//     }
-//   };
-// };
 
 export const InteractiveQAConnection = (options: InteractiveQAClientOptions) => {
   const { roomID, onReceived } = options;
@@ -452,7 +417,7 @@ export const InteractiveQAConnection = (options: InteractiveQAClientOptions) => 
         interactiveQAClient.subscribe(topic, (message: any) => {
           console.log(message);
           const newAction = JSON.parse(message.body);
-          console.log(`New interactiveQAAction received: ${newAction.TYPE}`);
+          console.log(`New WhiteboardAction received: ${newAction.TYPE}`);
           onReceived(newAction);
         });
       },
@@ -462,13 +427,12 @@ export const InteractiveQAConnection = (options: InteractiveQAClientOptions) => 
     );
   }
 
-  // Return a cleanup function to disconnect the WebSocket
   return () => {
     if (interactiveQAClient && interactiveQAClient.connected) {
-      console.log(`Disconnecting WebSocket for roomID: ${roomID}`);
-      interactiveQAClient.disconnect(() => {
-        console.log("WebSocket disconnected.");
-      });
+      interactiveQAClient.disconnect(() =>
+        console.log("Disconnected from WebSocket - interactiveQAClient")
+      );
+      interactiveQAClient = null;
     }
   };
 };
