@@ -353,7 +353,7 @@ const ViewerPage: React.FC = () => {
             >
               <div className="flex items-center gap-2">
                 <Info className="w-5 h-5 text-blue-400" />
-                <span className="font-semibold">Room Details</span>
+                <span className="font-semibold">Event Details</span>
               </div>
               {isRoomDetailsExpanded ? (
                 <ChevronUp className="w-5 h-5" />
@@ -372,22 +372,18 @@ const ViewerPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Questions Section */}
-          <div className="flex-1 border-y border-gray-700 overflow-hidden flex flex-col">
-            <div className="flex-1 overflow-hidden">
-              <ScrollArea className="h-full">
-                <QuestionComponent isHost={false} />
-              </ScrollArea>
-            </div>
+          {/* Questions Section - Fixed height */}
+          <div className="h-[300px] border-y border-gray-700">
+            <ScrollArea className="h-full">
+              <QuestionComponent isHost={false} />
+            </ScrollArea>
           </div>
 
-          {/* Live Chat Section */}
-          <div className="flex-1 overflow-hidden flex flex-col">
-            <div className="flex-1 overflow-hidden">
-              <ScrollArea className="h-full">
-                <LiveChat />
-              </ScrollArea>
-            </div>
+          {/* Live Chat Section - Takes remaining space */}
+          <div className="flex-1 min-h-0 flex flex-col">
+            <ScrollArea className="h-full">
+              <LiveChat />
+            </ScrollArea>
           </div>
         </div>
       </div>
