@@ -13,7 +13,7 @@ interface QuestionComponentProps {
 }
 
 const ViewerSideQuestionComponent: React.FC<QuestionComponentProps> = ({ isLive, roomId }) => {
-  const { questions, handleVote, addQuestion } = useQuestions();
+  const { questions, handleVote, moderateQuestion } = useQuestions();
   const [newQuestion, setNewQuestion] = useState('');
   const [questionList, setQuestionList] = useState<Question[]>(questions);
 
@@ -38,12 +38,26 @@ const ViewerSideQuestionComponent: React.FC<QuestionComponentProps> = ({ isLive,
   const handleSubmitQuestion = (e: React.FormEvent) => {
     e.preventDefault();
     if (newQuestion.trim()) {
-      addQuestion(newQuestion.trim());
-      setNewQuestion('');
-      sendInteractiveQAAction({
-        SESSION_ID: roomId,
-        TYPE: "send_question_to_host"
-      });
+
+      moderateQuestion(newQuestion.trim())
+        .then(result => {
+            if (result) {
+                console.log("Moderated question:", result);
+                setNewQuestion('');
+                sendInteractiveQAAction({
+                  SESSION_ID: roomId,
+                  TYPE: "send_question_to_host",
+                  QUESTION: JSON.stringify(result)
+                });
+            } else {
+                console.error("Failed to moderate the question");
+            }
+        })
+        .catch(error => {
+            console.error("Error moderating the question:", error);
+        });
+
+      
     }
   };
 

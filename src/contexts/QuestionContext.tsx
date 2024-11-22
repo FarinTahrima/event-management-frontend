@@ -16,9 +16,10 @@ interface QuestionContextType {
     setQuestions: React.Dispatch<React.SetStateAction<Question[]>>;
     handleVote: (questionId: string) => void;
     handleSelectQuestion: (question: Question) => void;
-    addQuestion: (text: string) => Promise<void>;
+    moderateQuestion: (text: string) => Promise<any>;
     deleteQuestion: (questionId: string) => void;
     approveQuestion: (questionId: string) => void;
+    addQuestion: (question: Question) => void;
 }
 
 const QuestionContext = createContext<QuestionContextType | undefined>(undefined);
@@ -82,7 +83,7 @@ export const QuestionProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         // localStorage.setItem("selected_question_id" , selectedQuestion.id);
     };
 
-    const addQuestion = async (text: string) => {
+    const moderateQuestion = async (text: string) => {
         try {
             const response = await fetch('http://localhost:3000/moderate-question', {
                 method: 'POST',
@@ -106,16 +107,19 @@ export const QuestionProvider: React.FC<{ children: React.ReactNode }> = ({ chil
                 moderationStatus: status
             };
 
-            if (status === 'approved') {
-                setQuestions(prev => [...prev, { ...newQuestion }]);
-            } else {
-                setModeratedQuestions(prev => [...prev, { ...newQuestion, moderationStatus: 'flagged' }]);
-            }
+            return newQuestion;
         } catch (error) {
             console.error("Error adding question:", error);
         }
     };
 
+    const addQuestion = (question: Question) => {
+        if (question.moderationStatus === 'approved') {
+            setQuestions(prev => [...prev, { ...question }]);
+        } else {
+            setModeratedQuestions(prev => [...prev, { ...question, moderationStatus: 'flagged' }]);
+        }
+    }
 
     const deleteQuestion = (questionId: string) => {
         setQuestions(prev => prev.filter(q => q.id !== questionId));
@@ -138,9 +142,10 @@ export const QuestionProvider: React.FC<{ children: React.ReactNode }> = ({ chil
                 setQuestions,
                 handleVote,
                 handleSelectQuestion,
-                addQuestion,
+                moderateQuestion,
                 deleteQuestion,
-                approveQuestion
+                approveQuestion,
+                addQuestion
             }}
         >
             {children}

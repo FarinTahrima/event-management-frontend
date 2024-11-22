@@ -15,7 +15,7 @@ interface QuestionComponentProps {
 }
 
 const QuestionComponent: React.FC<QuestionComponentProps> = ({ isHost }) => {
-  const { questions, handleVote, handleSelectQuestion, addQuestion } =
+  const { questions, handleVote, handleSelectQuestion, moderateQuestion: addQuestion } =
     useQuestions();
   const [newQuestion, setNewQuestion] = useState("");
 

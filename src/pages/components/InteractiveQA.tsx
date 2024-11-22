@@ -23,8 +23,6 @@ export const SelectedQuestionDisplay: React.FC<SelectedQuestionProps> = ({isHost
         questions
     } = useQuestions();
 
-    console.log("status", isHost + "_" + selectedQuestion?.text);
-
     const selectedQuestionId = localStorage.getItem("selected_question_id");
     const selQues = questions.find((q => q.id === selectedQuestionId));
     const [question, setQuestion] = useState(isHost ? selectedQuestion : selQues);
@@ -96,35 +94,26 @@ const InteractiveQAComponent: React.FC<InteractiveQAProps> = ({roomId}) => {
         handleVote, 
         handleSelectQuestion, 
         deleteQuestion,
-        approveQuestion
+        approveQuestion,
+        addQuestion
     } = useQuestions();
 
     const selectedQuestionId = localStorage.getItem("selected_question_id");
     const savedSelectedQuestion = questions.find((q => q.id === selectedQuestionId));
     const [selectedQuestion, setSelectedQuestion] = useState(savedSelectedQuestion);
-    let modQues = moderatedQuestions;
-    
     useEffect(() => {
         const cleanupWebSocket = InteractiveQAConnection({
           roomID: roomId ?? "",
           onReceived: (action: InteractiveQAAction) => {
             console.log("Received Action:", action);
-            // if (action.TYPE === "select_interactive_question" && action.QUESTION) {
-            //     setSelectedQuestion(JSON.parse(action.QUESTION));
-            // }
-            if (action.TYPE === "send_question_to_host") {
-                // let random = localStorage.getItem("moderatedQuestions");
-                // console.log(random, "modques");
+            if (action.TYPE === "send_question_to_host" && action.QUESTION) {
+                addQuestion(JSON.parse(action.QUESTION));
                 console.log("interactive received", action);
             }
           }
         });
         return cleanupWebSocket;
       }, [roomId]);
-
-    //   useEffect(() => {
-    //     console.log(moderatedQuestions, "mq");
-    //   }, [moderatedQuestions]);
 
     useEffect(() => {
         // update changed selected question
@@ -155,14 +144,14 @@ const InteractiveQAComponent: React.FC<InteractiveQAProps> = ({roomId}) => {
                     </div>
 
                     {/* Review Section */}
-                    {modQues.length > 0 && (
+                    {moderatedQuestions.length > 0 && (
                         <div className="h-1/3 min-h-[200px]">
                             <h2 className="text-xl font-semibold mb-3 text-yellow-400">
                                 Questions Requiring Review
                             </h2>
                             <ScrollArea className="h-[calc(100%-2rem)] bg-gray-800 rounded-lg p-4">
                                 <div className="space-y-3">
-                                    {modQues.map((question) => (
+                                    {moderatedQuestions.map((question) => (
                                         <Card
                                             key={question.id}
                                             className="p-4 bg-gray-700 border-l-4 border-yellow-400"

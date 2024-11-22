@@ -44,7 +44,6 @@ export interface InteractiveQAAction {
   SESSION_ID: string;
   TYPE: string;
   QUESTION?: string;
-  TEXT?: string
 }
 
 export interface LivePollAction {
