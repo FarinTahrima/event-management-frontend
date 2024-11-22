@@ -23,12 +23,13 @@ const ViewerSideQuestionComponent: React.FC<QuestionComponentProps> = ({ isLive 
 
   return (
     <div className="flex flex-col h-full relative">
-      {/* Header - Fixed at top */}
-      <div className="sticky top-0 z-10 p-4 border-b border-gray-800 bg-gray-800">
+       {/* Header - Fixed at top */}
+       <div className="sticky top-0 z-10 p-4 border-b border-gray-800 bg-gray-800">
         <div className="flex items-center justify-between">
           <h3 className="text-xl font-semibold flex items-center gap-2 text-white">
+            {/* <Bird className="h-6 w-6 text-blue-400" /> */}
             <MessageCircleQuestion className="h-6 w-6 text-blue-400" />
-            Interactive Q & A
+            Live Q&A
           </h3>
         </div>
       </div>
@@ -41,19 +42,23 @@ const ViewerSideQuestionComponent: React.FC<QuestionComponentProps> = ({ isLive 
 
       {/* Questions List - Scrollable middle section */}
       {isLive &&
-        <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto">
           <div className="space-y-3 p-4">
             {questions.map((question) => (
               <Card
                 key={question.id}
-                className={"p-4 transition-all duration-200 cursor-pointer bg-gray-800 hover:bg-gray-700"}
+                className={`p-4 transition-all duration-200 cursor-pointer ${
+                  question.isSelected
+                    ? "bg-blue-600 hover:bg-blue-700"
+                    : "bg-gray-800 hover:bg-gray-700"
+                }`}
               >
                 <div className="flex gap-4">
                   <Button
                     variant={question.hasVoted ? "secondary" : "ghost"}
                     size="sm"
                     className={`flex flex-col items-center min-w-[60px] text-white ${
-                      question.hasVoted ? 'bg-blue-500 hover:bg-blue-600' : ''
+                      question.hasVoted ? "bg-blue-500 hover:bg-blue-600" : ""
                     }`}
                     onClick={(e) => {
                       e.stopPropagation();
@@ -61,7 +66,9 @@ const ViewerSideQuestionComponent: React.FC<QuestionComponentProps> = ({ isLive 
                     }}
                   >
                     <ChevronUp className="h-5 w-5" />
-                    <span className="text-sm font-semibold">{question.votes}</span>
+                    <span className="text-sm font-semibold">
+                      {question.votes}
+                    </span>
                   </Button>
                   <div className="flex-1">
                     <p className="text-md text-white">{question.text}</p>
@@ -74,7 +81,7 @@ const ViewerSideQuestionComponent: React.FC<QuestionComponentProps> = ({ isLive 
               </Card>
             ))}
           </div>
-        </div> 
+        </div>
       }
 
       {/* Question Input - Fixed at bottom */}
@@ -88,15 +95,15 @@ const ViewerSideQuestionComponent: React.FC<QuestionComponentProps> = ({ isLive 
               placeholder="Ask a question..."
               className="flex-1 bg-gray-700 border-gray-600 focus:border-blue-500 focus:ring-blue-500"
             />
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               className="bg-blue-600 hover:bg-blue-700 text-white"
             >
               <MessageSquarePlus className="h-5 w-5 mr-2" />
               Ask
             </Button>
           </form>
-        </div>
+      </div>
       }
     </div>
     
