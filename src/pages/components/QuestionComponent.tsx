@@ -5,7 +5,6 @@ import { Input } from "@/components/shadcn/ui/input";
 import {
   ChevronUp,
   MessageSquarePlus,
-  Bird,
   Clock,
   MessageCircleQuestion,
 } from "lucide-react";

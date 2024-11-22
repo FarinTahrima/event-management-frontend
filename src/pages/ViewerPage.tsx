@@ -352,7 +352,7 @@ const ViewerPage: React.FC = () => {
               onClick={toggleRoomDetails}
             >
               <div className="flex items-center gap-2">
-                <Info className="w-5 h-5 text-blue-400" />
+                <Info className="w-6 h-6 text-blue-400" />
                 <span className="font-semibold">Event Details</span>
               </div>
               {isRoomDetailsExpanded ? (
@@ -373,10 +373,8 @@ const ViewerPage: React.FC = () => {
           </div>
 
           {/* Questions Section - Fixed height */}
-          <div className="h-[300px] border-y border-gray-700">
-            <ScrollArea className="h-full">
+          <div className="min-h-[26rem] border-y border-gray-700">
               <QuestionComponent isHost={false} />
-            </ScrollArea>
           </div>
 
           {/* Live Chat Section - Takes remaining space */}
