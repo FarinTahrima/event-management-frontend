@@ -3,8 +3,55 @@ import SockJS from "sockjs-client";
 import * as apiClient from "@/utils/api-client";
 import { Message } from "@/types/types";
 import { Emoji } from "@/components/EmojiReaction";
-import { ModuleAction, WhiteboardAction } from "@/pages/EventPage";
-import { StatusMessage } from "@/pages/ViewerPage";
+import { PollResponse } from "@/pages/host/HostCreatePoll";
+
+export interface StreamStatus {
+  isLive: boolean;
+  viewerCount: number;
+  sessionId?: string;
+  roomId?: string;
+}
+
+export interface StatusMessage {
+  TYPE: string;
+  ID?: string;
+  SESSION_ID?: string;
+  VIEWER_COUNT?: number;
+  IS_LIVE?: any;
+}
+
+export interface ModuleAction {
+  ID: string;
+  TYPE: string;
+  SESSION_ID: string;
+  SENDER: string;
+  TIMESTAMP: string;
+  CONTENT?: string;
+  slideIndex?: number;
+  IS_LIVE: boolean;
+}
+
+export interface WhiteboardAction {
+  SESSION_ID: string;
+  TYPE: string;
+  X?: number;
+  Y?: number;
+  COLOR?: string;
+  LINE_WIDTH?: number;
+}
+
+export interface InteractiveQAAction {
+  SESSION_ID: string;
+  TYPE: string;
+  QUESTION: string;
+}
+
+export interface LivePollAction {
+  SESSION_ID: string, 
+  TYPE: string,
+  IS_HOST: boolean, 
+  POLL: PollResponse
+}
 
 export interface MessagingClientOptions {
   roomID: string;
@@ -27,6 +74,17 @@ export interface WhiteboardClientOptions {
   onReceived: (action: WhiteboardAction) => void;
 }
 
+export interface InteractiveQAClientOptions {
+  roomID: string;
+  onReceived: (action: InteractiveQAAction) => void;
+}
+
+export interface LivePollClientOptions {
+  roomID: string;
+  onReceived: (action: LivePollAction) => void;
+}
+
+
 export interface StreamClientOptions {
   roomID: string;
   onReceived: (status: StatusMessage) => void;
@@ -37,6 +95,8 @@ let emojiClient: any = null;
 let moduleClient: any = null;
 let streamClient: any = null;
 let whiteboardClient: any = null;
+let interactiveQAClient: any = null;
+let livePollClient: any = null;
 
 /**
  * Initializes WebSocket connection and subscribes to the chat topic
@@ -161,8 +221,6 @@ export const EmojiConnection = (options: EmojiClientOptions) => {
 
 export const ModuleConnection = (options: ModuleClientOptions) => {
   const { roomID, onReceived } = options;
-  const userToken = localStorage.getItem("watchparty-token");
-  let token = userToken?.substring(1, userToken.length - 1);
 
   if (!moduleClient || !moduleClient.connected) {
     moduleClient = Stomp.over(
@@ -218,8 +276,6 @@ export const sendModuleAction = async (action: ModuleAction) => {
 
 export const StreamConnection = (options: StreamClientOptions) => {
   const { roomID, onReceived } = options;
-  const userToken = localStorage.getItem("watchparty-token");
-  let token = userToken?.substring(1, userToken.length - 1);
 
   const disconnect = () => {
     if (streamClient && streamClient.connected) {
@@ -289,8 +345,6 @@ export const sendStreamStatus = async (status: StatusMessage) => {
 
 export const WhiteboardConnection = (options: WhiteboardClientOptions) => {
   const { roomID, onReceived } = options;
-  const userToken = localStorage.getItem("watchparty-token");
-  let token = userToken?.substring(1, userToken.length - 1);
 
   if (!whiteboardClient || !whiteboardClient.connected) {
     whiteboardClient = Stomp.over(
@@ -340,6 +394,154 @@ export const sendWhiteboardAction = async (action: WhiteboardAction) => {
     whiteboardClient.connect({}, () => {
       console.log("Reconnected and sending whiteboard action:", action);
       whiteboardClient.send("/app/whiteboardAction", {}, JSON.stringify(action));
+    });
+  }
+};
+
+// export const InteractiveQAConnection = (options: InteractiveQAClientOptions) => {
+//   const { roomID, onReceived } = options;
+
+//   if (!interactiveQAClient || !interactiveQAClient.connected) {
+//     interactiveQAClient = Stomp.over(
+//       () => new SockJS(`http://localhost:8080/interactiveQAAction?roomID=${roomID}`)
+//     );
+//     interactiveQAClient.reconnectDelay = 5000;
+
+//     interactiveQAClient.connect(
+//       {},
+//       () => {
+//         const topic = `/topic/interactiveQAAction/${roomID}`;
+//         console.log(`Connected and subscribed to: ${topic}`);
+//         interactiveQAClient.subscribe(topic, (message: any) => {
+//           console.log(message);
+//           const newAction = JSON.parse(message.body);
+//           console.log(`New interactiveQAAction received: ${newAction.TYPE}`);
+//           onReceived(newAction);
+//         });
+//       },
+//       (error: Error) => {
+//         console.error("WebSocket connection error:", error);
+//       }
+//     );
+//   }
+
+//   return () => {
+//     if (interactiveQAClient && interactiveQAClient.connected) {
+//       interactiveQAClient.disconnect(() =>
+//         console.log("Disconnected from WebSocket - interactiveQAClient")
+//       );
+//       interactiveQAClient = null;
+//     }
+//   };
+// };
+
+export const InteractiveQAConnection = (options: InteractiveQAClientOptions) => {
+  const { roomID, onReceived } = options;
+
+  if (!interactiveQAClient || !interactiveQAClient.connected) {
+    interactiveQAClient = Stomp.over(
+      () => new SockJS(`http://localhost:8080/interactiveQAAction?roomID=${roomID}`)
+    );
+    interactiveQAClient.reconnectDelay = 5000;
+
+    interactiveQAClient.connect(
+      {},
+      () => {
+        const topic = `/topic/interactiveQAAction/${roomID}`;
+        console.log(`Connected and subscribed to: ${topic}`);
+        interactiveQAClient.subscribe(topic, (message: any) => {
+          console.log(message);
+          const newAction = JSON.parse(message.body);
+          console.log(`New interactiveQAAction received: ${newAction.TYPE}`);
+          onReceived(newAction);
+        });
+      },
+      (error: Error) => {
+        console.error("WebSocket connection error:", error);
+      }
+    );
+  }
+
+  // Return a cleanup function to disconnect the WebSocket
+  return () => {
+    if (interactiveQAClient && interactiveQAClient.connected) {
+      console.log(`Disconnecting WebSocket for roomID: ${roomID}`);
+      interactiveQAClient.disconnect(() => {
+        console.log("WebSocket disconnected.");
+      });
+    }
+  };
+};
+
+export const sendInteractiveQAAction = async (action: InteractiveQAAction) => {
+  if (interactiveQAClient && interactiveQAClient.connected) {
+    console.log("Sending InteractiveQA action:", action);
+    interactiveQAClient.send("/app/interactiveQAAction", {}, JSON.stringify(action));
+  } else {
+    interactiveQAClient = Stomp.over(
+      () =>
+        new SockJS(
+          `http://localhost:8080/interactiveQAAction?roomID=${action.SESSION_ID}`
+        )
+    );
+    interactiveQAClient.connect({}, () => {
+      console.log("Reconnected and sending InteractiveQA action:", action);
+      interactiveQAClient.send("/app/interactiveQAAction", {}, JSON.stringify(action));
+    });
+  }
+};
+
+export const LivePollConnection = (options: LivePollClientOptions) => {
+  const { roomID, onReceived } = options;
+
+  if (!livePollClient || !livePollClient.connected) {
+    livePollClient = Stomp.over(
+      () => new SockJS(`http://localhost:8080/livePollAction?roomID=${roomID}`)
+    );
+    livePollClient.reconnectDelay = 5000;
+
+    livePollClient.connect(
+      {},
+      () => {
+        const topic = `/topic/livePollAction/${roomID}`;
+        console.log(`Connected and subscribed to: ${topic}`);
+        livePollClient.subscribe(topic, (message: any) => {
+          console.log(message);
+          const newAction = JSON.parse(message.body);
+          console.log(`New livePollAction received: ${newAction.TYPE}`);
+          onReceived(newAction);
+        });
+      },
+      (error: Error) => {
+        console.error("WebSocket connection error:", error);
+      }
+    );
+  }
+
+  return () => {
+    if (livePollClient && livePollClient.connected) {
+      livePollClient.disconnect(() =>
+        console.log("Disconnected from WebSocket - livePollClient")
+      );
+      livePollClient = null;
+    }
+  };
+};
+
+export const sendLivePollAction = async (action: LivePollAction) => {
+  if (livePollClient && livePollClient.connected) {
+    console.log("Sending LivePoll action:", action);
+    livePollClient.send("/app/livePollAction", {}, JSON.stringify(action));
+  } else {
+    livePollClient = Stomp.over(
+      () =>
+        new SockJS(
+          `http://localhost:8080/livePollAction?roomID=${action.SESSION_ID}`
+        )
+    );
+    livePollClient.connect({}, () => {
+      console.log("Reconnected and sending LivePoll action:", action);
+      livePollClient.send("/app/livePollAction", {}, JSON.stringify(action));
     });
   }
 };

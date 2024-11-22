@@ -79,6 +79,7 @@ export const QuestionProvider: React.FC<{ children: React.ReactNode }> = ({ chil
                 isSelected: question.id === selectedQuestion.id
             }))
         );
+        // localStorage.setItem("selected_question_id" , selectedQuestion.id);
     };
 
     const addQuestion = async (text: string) => {

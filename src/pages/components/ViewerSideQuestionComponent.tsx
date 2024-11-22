@@ -4,14 +4,12 @@ import { Button } from "@/components/shadcn/ui/button";
 import { Input } from "@/components/shadcn/ui/input";
 import { ChevronUp, MessageSquarePlus, Clock, MessageCircleQuestion } from "lucide-react";
 import { useQuestions } from '../../contexts/QuestionContext';
-import { Question } from '@/types/types';
 
 interface QuestionComponentProps {
-  selectedQuestion: Question|null;
   isLive: boolean;
 }
 
-const ViewerSideQuestionComponent: React.FC<QuestionComponentProps> = ({ selectedQuestion, isLive }) => {
+const ViewerSideQuestionComponent: React.FC<QuestionComponentProps> = ({ isLive }) => {
   const { questions, handleVote, addQuestion } = useQuestions();
   const [newQuestion, setNewQuestion] = useState('');
 
@@ -48,11 +46,7 @@ const ViewerSideQuestionComponent: React.FC<QuestionComponentProps> = ({ selecte
             {questions.map((question) => (
               <Card
                 key={question.id}
-                className={`p-4 transition-all duration-200 cursor-pointer ${
-                  selectedQuestion && selectedQuestion.id == question.id 
-                    ? 'bg-blue-600 hover:bg-blue-700' 
-                    : 'bg-gray-800 hover:bg-gray-700'
-                }`}
+                className={"p-4 transition-all duration-200 cursor-pointer bg-gray-800 hover:bg-gray-700"}
               >
                 <div className="flex gap-4">
                   <Button

@@ -20,49 +20,23 @@ import {
   DialogTitle,
 } from "@/components/shadcn/ui/dialog";
 import {
+  ModuleAction,
   ModuleConnection,
   sendModuleAction,
   sendStreamStatus,
   sendWhiteboardAction,
   StreamConnection,
+  StreamStatus,
+  WhiteboardAction,
   WhiteboardConnection,
 } from "@/utils/messaging-client";
 import { useAppContext } from "@/contexts/AppContext";
 import VideoJSSynced from "@/components/VideoJSSynced";
-import { Components, ComponentItem, Poll } from "@/data/componentData";
+import { Components, ComponentItem, Poll, videoSource } from "@/data/componentData";
 import PollComponent from "./components/PollComponent";
 import SlideShow from "./components/SlideShow";
 import Whiteboard, { WhiteBoardData } from "./components/Whiteboard";
 import InteractiveQAComponent from "./components/InteractiveQA";
-import { Question } from "@/types/types";
-
-interface StreamStatus {
-  isLive: boolean;
-  viewerCount: number;
-  sessionId?: string;
-}
-
-export interface ModuleAction {
-  ID: string;
-  TYPE: string;
-  SESSION_ID: string;
-  SENDER: string;
-  TIMESTAMP: string;
-  CONTENT?: string;
-  slideIndex?: number;
-  IS_LIVE: boolean;
-}
-
-export interface WhiteboardAction {
-  SESSION_ID: string;
-  TYPE: string;
-  X?: number;
-  Y?: number;
-  COLOR?: string;
-  LINE_WIDTH?: number;
-}
-
-export const videoSource = "http://localhost:8080/encoded/laptop/master.m3u8";
 
 const videoJSOptions = {
   sources: [
@@ -256,18 +230,6 @@ const EventPage: React.FC = () => {
     });
   };
 
-  const sendActionForInteractiveQASelectQuestion = (question: Question) => {
-    sendModuleAction({
-      ID: "64",
-      TYPE: "select_interactive_question",
-      SESSION_ID: roomId ?? "",
-      SENDER: user?.username ?? "",
-      TIMESTAMP: new Date().toISOString(),
-      CONTENT: JSON.stringify(question),
-      IS_LIVE: streamStatus.isLive,
-    });
-  };
-
   return (
     <div className="flex flex-col h-screen bg-gray-900 text-white">
       {/* Top Navigation Bar */}
@@ -385,11 +347,7 @@ const EventPage: React.FC = () => {
                         />
                       )}
                       {currentComponent.type === "interactive-qa" && roomId && (
-                        <InteractiveQAComponent
-                          sendSelectQuestionAction={
-                            sendActionForInteractiveQASelectQuestion
-                          }
-                        />
+                        <InteractiveQAComponent roomId={roomId} isHost />
                       )}
                       {currentComponent.content && (
                         <p className="text-white mb-4">

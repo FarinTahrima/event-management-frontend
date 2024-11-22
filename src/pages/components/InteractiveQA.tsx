@@ -1,16 +1,19 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useQuestions } from '../../contexts/QuestionContext';
 import { Card } from "@/components/shadcn/ui/card";
 import { Button } from "@/components/shadcn/ui/button";
 import { ScrollArea } from "@/components/shadcn/ui/scroll-area";
 import { ChevronUp, Clock, Trash2, CheckCircle, XCircle } from "lucide-react";
 import { Question } from '../../types/types';
+import { InteractiveQAAction, InteractiveQAConnection, sendInteractiveQAAction } from '@/utils/messaging-client';
 
 interface InteractiveQAProps {
-    sendSelectQuestionAction?: (question: Question) => void;
+    roomId: string;
+    isHost: boolean;
 }
 
-export const SelectedQuestionDisplay: React.FC<{ question: Question | null }> = ({ question }) => {
+export const SelectedQuestionDisplay: React.FC<{ question: Question | undefined }> = ({ question }) => {
+    
     if (!question) {
         return (
             <div className="flex items-center align-center justify-center h-full bg-gray-800 rounded-lg p-4">
@@ -40,7 +43,7 @@ export const SelectedQuestionDisplay: React.FC<{ question: Question | null }> = 
     );
 };
 
-const InteractiveQAComponent: React.FC<InteractiveQAProps> = ({sendSelectQuestionAction}) => {
+const InteractiveQAComponent: React.FC<InteractiveQAProps> = ({roomId, isHost}) => {
     const { 
         questions, 
         moderatedQuestions,
@@ -49,12 +52,36 @@ const InteractiveQAComponent: React.FC<InteractiveQAProps> = ({sendSelectQuestio
         deleteQuestion,
         approveQuestion 
     } = useQuestions();
+
+    const selectedQuestionId = localStorage.getItem("selected_question_id");
+    const savedSelectedQuestion = questions.find((q => q.id === selectedQuestionId));
+    const [selectedQuestion, setSelectedQuestion] = useState<Question|undefined>(savedSelectedQuestion);
     
-    const selectedQuestion = questions.find(q => q.isSelected) || null;
-    
+    useEffect(() => {
+        const cleanupWebSocket = InteractiveQAConnection({
+          roomID: roomId ?? "",
+          onReceived: (action: InteractiveQAAction) => {
+            console.log("Received Action:", action);
+            setSelectedQuestion(JSON.parse(action.QUESTION));
+          }
+        });
+        return cleanupWebSocket;
+      }, [roomId]);
+
     function selectQuestion(question: Question) {
         handleSelectQuestion(question);
-        if(sendSelectQuestionAction) sendSelectQuestionAction(question);
+        sendInteractiveQAAction({
+            SESSION_ID: roomId ?? "",
+            TYPE: "select_interactive_question",
+            QUESTION: JSON.stringify(question)
+        });
+        localStorage.setItem("selected_question_id" , question.id);
+    }
+
+    if (!isHost) {
+        return (
+            <SelectedQuestionDisplay question={selectedQuestion} />
+        )
     }
 
     return (

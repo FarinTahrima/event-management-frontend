@@ -5,14 +5,16 @@ import Chatbot from "@/components/experimental/AIchatbot";
 import LiveIndicator from "./components/LiveIndicator";
 import RoomDetailsComponent from "./components/RoomDetail";
 import {
+  ModuleAction,
   ModuleConnection,
   sendModuleAction,
   StreamConnection,
+  StreamStatus,
+  WhiteboardAction,
   WhiteboardConnection,
 } from "@/utils/messaging-client";
 import { useParams } from "react-router-dom";
-import { ModuleAction, videoSource, WhiteboardAction } from "./EventPage";
-import { ComponentItem, Components, Poll } from "../data/componentData";
+import { ComponentItem, Components, Poll, videoSource } from "../data/componentData";
 import { getCurrentModule, getStreamStatus } from "@/utils/api-client";
 import VideoJSSynced from "@/components/VideoJSSynced";
 import { useCallback, useEffect, useState } from "react";
@@ -21,24 +23,8 @@ import PollComponent from "./components/PollComponent";
 import ViewerSideQuestionComponent from "./components/ViewerSideQuestionComponent";
 import Whiteboard, { WhiteBoardData } from "./components/Whiteboard";
 import SlideShow from "./components/SlideShow";
-import { Question } from "@/types/types";
-import { useQuestions } from "@/contexts/QuestionContext";
-import { SelectedQuestionDisplay } from "./components/InteractiveQA";
+import InteractiveQAComponent from "./components/InteractiveQA";
 import { ChevronUp, ChevronDown, Info } from "lucide-react";
-
-interface StreamStatus {
-  isLive: boolean;
-  viewerCount: number;
-  roomId?: string;
-}
-
-export interface StatusMessage {
-  TYPE: string;
-  ID?: string;
-  SESSION_ID?: string;
-  VIEWER_COUNT?: number;
-  IS_LIVE?: any;
-}
 
 const ViewerPage: React.FC = () => {
   const [poll, setPoll] = useState(Poll);
@@ -54,11 +40,6 @@ const ViewerPage: React.FC = () => {
   const { user } = useAppContext();
   const [pollMode, setPollMode] = useState<"vote" | "result">("vote");
   const [data, setData] = useState<WhiteBoardData>();
-  const { questions } = useQuestions();
-  const selectedQuestion = questions.find((q) => q.isSelected);
-  const [question, setQuestion] = useState<Question | null>(
-    selectedQuestion ? selectedQuestion : null
-  );
 
   // Handler for module actions that considers stream status
   const handleModuleAction = useCallback(
@@ -73,10 +54,6 @@ const ViewerPage: React.FC = () => {
       if (action.TYPE === "poll_view" && action.CONTENT) {
         setPoll(JSON.parse(action.CONTENT));
         setPollMode("vote");
-      }
-
-      if (action.TYPE === "select_interactive_question" && action.CONTENT) {
-        setQuestion(JSON.parse(action.CONTENT));
       }
 
       // Only update currentComponent if stream is live
@@ -325,10 +302,9 @@ const ViewerPage: React.FC = () => {
                   <Whiteboard isHost={false} data={data} setData={setData} />
                 )}
                 {currentComponent.type === "interactive-qa" &&
-                  roomId &&
-                  question && (
+                  roomId && (
                     <div className="h-55">
-                      <SelectedQuestionDisplay question={question} />
+                      <InteractiveQAComponent roomId={roomID} isHost={false} />
                     </div>
                   )}
               </div>
@@ -377,7 +353,7 @@ const ViewerPage: React.FC = () => {
           <div className="flex-1 border-y border-gray-700 overflow-hidden flex flex-col">
             <div className="flex-1 overflow-hidden">
               <ScrollArea className="h-full">
-                <ViewerSideQuestionComponent isLive={streamStatus.isLive} selectedQuestion={question} />
+                <ViewerSideQuestionComponent isLive={streamStatus.isLive} />
               </ScrollArea>
             </div>
           </div>

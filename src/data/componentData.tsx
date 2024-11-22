@@ -19,6 +19,8 @@ export interface ComponentItem {
   currentImageIndex?: number;
 }
 
+export const videoSource = "http://localhost:8080/encoded/laptop/master.m3u8";
+
 export const Poll: PollResponse = {
   pollId: 1,
   pollQuestion: "Which laptop do you use?",
