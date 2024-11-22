@@ -10,7 +10,7 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({ chatMessages }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   return (
-    <ScrollArea className="h-96">
+    <ScrollArea className="min-h-[32rem]">
       <div className="px-2 my-4">
         {chatMessages.map((msg: Message) => (
           <p
