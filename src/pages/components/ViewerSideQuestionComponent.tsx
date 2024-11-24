@@ -22,14 +22,6 @@ const ViewerSideQuestionComponent: React.FC<QuestionComponentProps> = ({ isLive,
       roomID: roomId ?? "",
       onReceived: (action: InteractiveQAAction) => {
         console.log("Received Action:", action);
-        if (action.TYPE === "select_interactive_question" && action.QUESTION) {
-            // setSelectedQuestion(JSON.parse(action.QUESTION));
-            console.log("viewer side received", action);
-        }
-        // if (action.TYPE === "send_question_to_host") {
-        //     let random = localStorage.getItem("moderatedQuestions");
-        //     console.log(random, "modques");
-        // }
       }
     });
     return cleanupWebSocket;
