@@ -13,7 +13,7 @@ interface QuestionComponentProps {
 }
 
 const ViewerSideQuestionComponent: React.FC<QuestionComponentProps> = ({ isLive, roomId }) => {
-  const { questions, handleVote, moderateQuestion } = useQuestions();
+  const { questions, moderateQuestion } = useQuestions();
   const [newQuestion, setNewQuestion] = useState('');
   const [questionList, setQuestionList] = useState<Question[]>(questions);
 
@@ -56,8 +56,6 @@ const ViewerSideQuestionComponent: React.FC<QuestionComponentProps> = ({ isLive,
         .catch(error => {
             console.error("Error moderating the question:", error);
         });
-
-      
     }
   };
 
@@ -87,6 +85,14 @@ const ViewerSideQuestionComponent: React.FC<QuestionComponentProps> = ({ isLive,
       window.removeEventListener('storage', handleStorageChange);
     };
   }, [questions]); // Runs once when the component mounts
+
+  const handleVote = (question: Question) => {
+    sendInteractiveQAAction({
+      SESSION_ID: roomId,
+      TYPE: "vote_for_question",
+      QUESTION: JSON.stringify(question)
+    });
+  }
 
   return (
     <div className="flex flex-col h-full relative">
@@ -129,7 +135,7 @@ const ViewerSideQuestionComponent: React.FC<QuestionComponentProps> = ({ isLive,
                     }`}
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleVote(question.id);
+                      handleVote(question);
                     }}
                   >
                     <ChevronUp className="h-5 w-5" />

@@ -108,7 +108,9 @@ const InteractiveQAComponent: React.FC<InteractiveQAProps> = ({roomId}) => {
             console.log("Received Action:", action);
             if (action.TYPE === "send_question_to_host" && action.QUESTION) {
                 addQuestion(JSON.parse(action.QUESTION));
-                console.log("interactive received", action);
+            }
+            if (action.TYPE === "vote_for_question" && action.QUESTION) {
+                handleVote(JSON.parse(action.QUESTION).id);
             }
           }
         });
@@ -206,10 +208,6 @@ const InteractiveQAComponent: React.FC<InteractiveQAProps> = ({roomId}) => {
                                             className={`flex flex-col items-center min-w-[60px] p-2 rounded text-white ${
                                                 question.hasVoted ? 'bg-blue-500 hover:bg-blue-600' : 'bg-gray-700 hover:bg-gray-600'
                                             }`}
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleVote(question.id);
-                                            }}
                                         >
                                             <ChevronUp className="h-5 w-5 text-white"/>
                                             <span className="text-sm font-semibold text-white">{question.votes}</span>

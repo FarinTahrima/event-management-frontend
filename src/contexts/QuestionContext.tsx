@@ -37,7 +37,8 @@ export const QuestionProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         const savedQuestions = localStorage.getItem('questions');
         if (savedQuestions) {
             const parsed = JSON.parse(savedQuestions);
-            return parsed.map((q: any) => ({
+            return parsed
+                .map((q: any) => ({
                 ...q,
                 timestamp: new Date(q.timestamp),
                 moderationStatus: q.moderationStatus || 'approved'
@@ -69,8 +70,9 @@ export const QuestionProvider: React.FC<{ children: React.ReactNode }> = ({ chil
                         hasVoted: !question.hasVoted
                     }
                     : question
-            )
+            ).sort((a: any, b: any) => a.votes <= b.votes ? 1 : -1)
         );
+       
     };
 
     const handleSelectQuestion = (selectedQuestion: Question) => {
@@ -80,6 +82,7 @@ export const QuestionProvider: React.FC<{ children: React.ReactNode }> = ({ chil
                 isSelected: question.id === selectedQuestion.id
             }))
         );
+        
         // localStorage.setItem("selected_question_id" , selectedQuestion.id);
     };
 
