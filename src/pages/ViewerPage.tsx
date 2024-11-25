@@ -7,18 +7,16 @@ import RoomDetailsComponent from "./components/RoomDetail";
 import {
   ModuleAction,
   ModuleConnection,
-  sendModuleAction,
   StreamConnection,
   StreamStatus,
   WhiteboardAction,
   WhiteboardConnection,
 } from "@/utils/messaging-client";
 import { useParams } from "react-router-dom";
-import { ComponentItem, Components, Poll, videoSource } from "../data/componentData";
+import { ComponentItem, Components, videoSource } from "../data/componentData";
 import { getCurrentModule, getStreamStatus } from "@/utils/api-client";
 import VideoJSSynced from "@/components/VideoJSSynced";
 import { useCallback, useEffect, useState } from "react";
-import { useAppContext } from "@/contexts/AppContext";
 import PollComponent from "./components/PollComponent";
 import ViewerSideQuestionComponent from "./components/ViewerSideQuestionComponent";
 import Whiteboard, { WhiteBoardData } from "./components/Whiteboard";
@@ -27,7 +25,6 @@ import { SelectedQuestionDisplay } from "./components/InteractiveQA";
 import { ChevronUp, ChevronDown, Info } from "lucide-react";
 
 const ViewerPage: React.FC = () => {
-  const [poll, setPoll] = useState(Poll);
   const [currentComponent, setCurrentComponent] =
     useState<ComponentItem | null>(null);
   const [streamStatus, setStreamStatus] = useState<StreamStatus>({
@@ -37,24 +34,12 @@ const ViewerPage: React.FC = () => {
   const [isRoomDetailsExpanded, setIsRoomDetailsExpanded] = useState(true);
   const { roomId } = useParams();
   const roomID = roomId ? roomId.toString() : "";
-  const { user } = useAppContext();
-  const [pollMode, setPollMode] = useState<"vote" | "result">("vote");
   const [data, setData] = useState<WhiteBoardData>();
 
   // Handler for module actions that considers stream status
   const handleModuleAction = useCallback(
     (action: ModuleAction) => {
       console.log("Received ModuleAction:", action);
-
-      if (action.TYPE === "poll_result" && action.CONTENT) {
-        setPoll(JSON.parse(action.CONTENT));
-        setPollMode("result");
-      }
-
-      if (action.TYPE === "poll_view" && action.CONTENT) {
-        setPoll(JSON.parse(action.CONTENT));
-        setPollMode("vote");
-      }
 
       // Only update currentComponent if stream is live
       console.log("action.IS_LIVE (handleModuleAction): ", action.IS_LIVE);
@@ -218,19 +203,6 @@ const ViewerPage: React.FC = () => {
     ],
   };
 
-  const sendPollVote = (pollId: number, optionId: number) => {
-    console.log("voting for " + optionId + " in poll with id " + pollId);
-    sendModuleAction({
-      ID: "54",
-      TYPE: "poll_vote",
-      SESSION_ID: roomId ?? "",
-      SENDER: user?.username ?? "",
-      TIMESTAMP: new Date().toISOString(),
-      CONTENT: pollId + "_" + optionId,
-      IS_LIVE: streamStatus.isLive,
-    });
-  };
-
   const toggleRoomDetails = () => {
     setIsRoomDetailsExpanded(!isRoomDetailsExpanded);
   };
@@ -289,13 +261,8 @@ const ViewerPage: React.FC = () => {
                 )}
                 {currentComponent.type === "poll" && roomId && (
                   <PollComponent
-                    poll={poll}
-                    setPoll={setPoll}
                     isHost={false}
                     roomId={roomId}
-                    onVoteSubmit={sendPollVote}
-                    pollMode={pollMode}
-                    setPollMode={setPollMode}
                   />
                 )}
                 {currentComponent.type === "whiteboard" && roomId && (

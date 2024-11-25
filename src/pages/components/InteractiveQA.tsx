@@ -15,7 +15,6 @@ interface InteractiveQAProps {
 interface SelectedQuestionProps {
     isHost: boolean;
     selectedQuestion?: Question;
-    setSelectedQuestion?: (selectedQuestion: Question) => void;
 }
 
 export const SelectedQuestionDisplay: React.FC<SelectedQuestionProps> = ({isHost, selectedQuestion}) => {
@@ -24,17 +23,17 @@ export const SelectedQuestionDisplay: React.FC<SelectedQuestionProps> = ({isHost
     } = useQuestions();
 
     const selectedQuestionId = localStorage.getItem("selected_question_id");
-    const selQues = questions.find((q => q.id === selectedQuestionId));
-    const [question, setQuestion] = useState(isHost ? selectedQuestion : selQues);
+    const retrievedSelectedQuestion = questions.find((q => q.id === selectedQuestionId));
+    const [question, setQuestion] = useState(isHost ? selectedQuestion : retrievedSelectedQuestion);
+    const [questionList, setQuestionList] = useState(questions);
     
     useEffect(() => {
         const handleStorageChange = (event: StorageEvent) => {
-          if (event.storageArea === localStorage && event.key === "selected_question_id" && !isHost) {
+          if (event.storageArea === localStorage && event.key === "questions" && !isHost) {
             try {
               if (event.newValue) {
-                const selectedQuestionId = localStorage.getItem("selected_question_id");
-                const selectedQues = questions.find((q => q.id === selectedQuestionId));
-                setQuestion(selectedQues);
+                const newQuestionList = JSON.parse(event.newValue);
+                setQuestionList(newQuestionList);
               }
             } catch (error) {
               console.error("Error parsing storage data:", error);
@@ -50,6 +49,13 @@ export const SelectedQuestionDisplay: React.FC<SelectedQuestionProps> = ({isHost
           window.removeEventListener('storage', handleStorageChange);
         };
       }, [questions]); // Runs once when the component mounts
+
+      useEffect(() => {
+        if (!isHost) {
+            const selectedQuestion = questionList.find((q => q.isSelected));
+            setQuestion(selectedQuestion);
+        }
+      }, [questionList]);
 
       useEffect(() => {
         // update changed selected question
@@ -120,11 +126,8 @@ const InteractiveQAComponent: React.FC<InteractiveQAProps> = ({roomId}) => {
     useEffect(() => {
         // update changed selected question
         const ques = questions.find(q => q.isSelected);
-        console.log("new sel ques", ques);
         setSelectedQuestion(ques);
       }, [questions]);
-
-    
     function selectQuestion(question: Question) {
         handleSelectQuestion(question);
         sendInteractiveQAAction({
@@ -142,7 +145,10 @@ const InteractiveQAComponent: React.FC<InteractiveQAProps> = ({roomId}) => {
                 <div className="w-1/2 flex flex-col gap-4">
                     {/* Selected Question */}
                     <div className="flex-1">
-                        <SelectedQuestionDisplay isHost selectedQuestion={selectedQuestion}/>
+                        <SelectedQuestionDisplay
+                            isHost 
+                            selectedQuestion={selectedQuestion}
+                        />
                     </div>
 
                     {/* Review Section */}
