@@ -13,6 +13,12 @@ interface AIShip {
     size: number;
 }
 
+interface ProbabilityCell {
+    row: number;
+    col: number;
+    weight: number;
+}
+
 interface GameState {
     playerBoard: (string | null)[][];
     aiBoard: {
@@ -54,6 +60,19 @@ const SHIPS: Ship[] = [
     { name: 'Cruiser', size: 3 },
     { name: 'Submarine', size: 3 },
     { name: 'Destroyer', size: 2 }
+];
+
+const HUNT_PATTERNS = [
+    [0, 0], [0, 2], [0, 4], [0, 6], [0, 8],
+    [1, 1], [1, 3], [1, 5], [1, 7], [1, 9],
+    [2, 0], [2, 2], [2, 4], [2, 6], [2, 8],
+    [3, 1], [3, 3], [3, 5], [3, 7], [3, 9],
+    [4, 0], [4, 2], [4, 4], [4, 6], [4, 8],
+    [5, 1], [5, 3], [5, 5], [5, 7], [5, 9],
+    [6, 0], [6, 2], [6, 4], [6, 6], [6, 8],
+    [7, 1], [7, 3], [7, 5], [7, 7], [7, 9],
+    [8, 0], [8, 2], [8, 4], [8, 6], [8, 8],
+    [9, 1], [9, 3], [9, 5], [9, 7], [9, 9]
 ];
 
 const placeAIShips = (): AIShip[] => {
@@ -263,56 +282,98 @@ const Battleship: React.FC = () => {
     };
     
     const getProbabilityBasedMove = (state: GameState): { row: number; col: number } => {
-        const probabilityMap = Array(10).fill(0).map(() => Array(10).fill(0));
+        const cells: ProbabilityCell[] = [];
+        const heatMap = Array(10).fill(0).map(() => Array(10).fill(0));
+
+        if (!state.aiHuntMode) {
+            HUNT_PATTERNS.forEach(([row, col]) => {
+                if (!state.playerHits[row][col]) {
+                    heatMap[row][col] += 3; 
+                }
+            });
+        }
+    
+        // Calculate ship placement probabilities
+        for (let row = 0; row < 10; row++) {
+            for (let col = 0; col < 10; col++) {
+                if (state.playerHits[row][col]) continue;
+    
+                // Check horizontal placements
+                for (const ship of SHIPS) {
+                    if (col + ship.size <= 10) {
+                        let valid = true;
+                        let adjacentHit = false;
+                        
+                        for (let i = 0; i < ship.size; i++) {
+                            if (state.playerHits[row][col + i]) {
+                                valid = false;
+                                break;
+                            }
+                            // Check adjacent cells for hits
+                            if (row > 0 && state.playerHits[row - 1][col + i]) adjacentHit = true;
+                            if (row < 9 && state.playerHits[row + 1][col + i]) adjacentHit = true;
+                        }
+                        
+                        if (valid) {
+                            heatMap[row][col] += ship.size;
+                            if (adjacentHit) heatMap[row][col] += 2;
+                        }
+                    }
+                }
+    
+                // Check vertical placements
+                for (const ship of SHIPS) {
+                    if (row + ship.size <= 10) {
+                        let valid = true;
+                        let adjacentHit = false;
+                        
+                        for (let i = 0; i < ship.size; i++) {
+                            if (state.playerHits[row + i][col]) {
+                                valid = false;
+                                break;
+                            }
+                            // Check adjacent cells for hits
+                            if (col > 0 && state.playerHits[row + i][col - 1]) adjacentHit = true;
+                            if (col < 9 && state.playerHits[row + i][col + 1]) adjacentHit = true;
+                        }
+                        
+                        if (valid) {
+                            heatMap[row][col] += ship.size;
+                            if (adjacentHit) heatMap[row][col] += 2;
+                        }
+                    }
+                }
+
+                heatMap[row][col] += Math.random() * 2;
+            }
+        }
 
         for (let row = 0; row < 10; row++) {
             for (let col = 0; col < 10; col++) {
-                if (!state.playerHits[row][col]) {
-                    for (const ship of SHIPS) {
-                        for (let i = 0; i <= ship.size && i + col < 10; i++) {
-                            let valid = true;
-                            for (let j = 0; j < ship.size; j++) {
-                                if (col + j >= 10 || state.playerHits[row][col + j]) {
-                                    valid = false;
-                                    break;
-                                }
-                            }
-                            if (valid) probabilityMap[row][col]++;
-                        }
-                    }
-
-                    for (const ship of SHIPS) {
-                        for (let i = 0; i <= ship.size && i + row < 10; i++) {
-                            let valid = true;
-                            for (let j = 0; j < ship.size; j++) {
-                                if (row + j >= 10 || state.playerHits[row + j][col]) {
-                                    valid = false;
-                                    break;
-                                }
-                            }
-                            if (valid) probabilityMap[row][col]++;
-                        }
-                    }
+                if (!state.playerHits[row][col] && heatMap[row][col] > 0) {
+                    cells.push({
+                        row,
+                        col,
+                        weight: heatMap[row][col]
+                    });
                 }
             }
         }
 
-        let maxProb = 0;
-        const bestMoves: { row: number; col: number }[] = [];
+        cells.sort((a, b) => b.weight - a.weight);
+
+        const topCandidates = cells.slice(0, Math.min(5, cells.length));
+        const totalWeight = topCandidates.reduce((sum, cell) => sum + cell.weight, 0);
+        let random = Math.random() * totalWeight;
         
-        for (let row = 0; row < 10; row++) {
-            for (let col = 0; col < 10; col++) {
-                if (probabilityMap[row][col] > maxProb) {
-                    maxProb = probabilityMap[row][col];
-                    bestMoves.length = 0;
-                    bestMoves.push({ row, col });
-                } else if (probabilityMap[row][col] === maxProb) {
-                    bestMoves.push({ row, col });
-                }
+        for (const cell of topCandidates) {
+            random -= cell.weight;
+            if (random <= 0) {
+                return { row: cell.row, col: cell.col };
             }
         }
     
-        return bestMoves[Math.floor(Math.random() * bestMoves.length)];
+        return cells[0]; 
     };
     
     const isValidMove = (row: number, col: number, playerHits: boolean[][]): boolean => {
