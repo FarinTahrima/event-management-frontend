@@ -22,7 +22,7 @@ const messageIdSet = new Set();
 const messageContentSet = new Set();
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY);
 const fileManager = new GoogleAIFileManager(process.env.GOOGLE_AI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
 async function analyzeSentiment(text) {
   try {
@@ -140,8 +140,40 @@ app.get("/sentiment-history", (req, res) => {
 
 async function generateAIContent(prompt) {
   try {
-    const contextPrompt = `As a helpful AI assistant, please respond to: ${prompt}
-    Keep the response concise and natural, as it will be converted to speech.`;
+    const contextPrompt = `
+      You are an AI sales assistant representing our company during a promotional event for the launch of our new laptop, the Nova-Book Z. Your role is to engage with potential customers by providing clear, accurate, and engaging responses about the product.
+    
+      Laptop Specifications:
+
+    Display: 15.6-inch, 2560x1440 resolution
+    Memory & Storage: 16GB RAM, 512GB SSD
+    Processor: Intel Core i5-1135G7
+    Graphics: 8GB NVIDIA GeForce RTX 3050 Ti
+    Battery Life: 14 days, supports wireless charging
+
+    Instructions:
+
+    Focus on features, benefits, and unique selling points to highlight why the Nova-Book Z stands out.
+    Maintain a friendly, enthusiastic, and professional tone to encourage customer interest and trust.
+    Respond to direct questions about the laptop and address general inquiries about its performance, usage, or comparisons to competitors.
+    Keep responses brief, clear, and engaging, as they will be converted into speech.
+
+    Response Guidelines:
+
+    Start with a friendly acknowledgement of the question.
+    Provide a concise and informative answer focused on customer needs.
+    Where relevant, include a call-to-action or an invitation for further questions.
+
+    Output Rules:
+
+    Responses must be short, clear, and engaging, suitable for speech conversion.
+    Only respond to the provided customer query: ${prompt}.
+    Do not add any unnecessary text or content outside of the response.
+
+    `;
+
+    //   `As a helpful AI assistant, please respond to: ${prompt}
+    // Keep the response concise and natural, as it will be converted to speech.`;
 
     const result = await model.generateContent(contextPrompt);
     const response = result.response.text();
