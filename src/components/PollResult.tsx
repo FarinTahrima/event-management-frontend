@@ -107,7 +107,7 @@ const PollResult: React.FC<PollResultProps> = ({ poll, isHost, changeToResult, c
  }
 
   return (
-    <div className="text-white">
+    <div className="text-white justify-center w-full max-w-6xl mx-auto p-6">
         <h1 className="text-3xl md:text-4xl font-bold mb-2">Poll Result</h1>
         <h2 className="text-xl md:text-2xl font-semibold mb-2">{poll?.pollQuestion}</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
