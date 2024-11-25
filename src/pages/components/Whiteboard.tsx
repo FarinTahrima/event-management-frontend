@@ -1,37 +1,57 @@
 import { Button } from "@/components/shadcn/ui/button";
 import { useRef, useState, useEffect } from "react";
-import { MousePointer2, Pen, Palette, Tally3, Eraser } from 'lucide-react';
+import { MousePointer2, Pen, Eraser } from 'lucide-react';
 import "@/index.css";
 import { Popover, PopoverClose, PopoverContent, PopoverTrigger } from "@radix-ui/react-popover";
 import { Input } from "@/components/shadcn/ui/input";
 import { Label } from "@/components/shadcn/ui/label";
-
-export type WhiteBoardData = {
-  type: string;
-  x?: number;
-  y?: number;
-  color?: string;
-  lineWidth?: number;
-}
+import { sendWhiteboardAction, WhiteboardAction, WhiteboardConnection } from "@/utils/messaging-client";
 
 interface WhiteboardProps {
     isHost: boolean;
-    data?: WhiteBoardData;
-    setData?: (data: WhiteBoardData) => void;
-    sendActionForWhiteboard?: (data: WhiteBoardData) => void;
+    roomId: string;
 }
 
-const Whiteboard: React.FC<WhiteboardProps> = ({ isHost, data, sendActionForWhiteboard}) => {
-  const markerColors = ["black", "blue", "green", "red"];
+const Whiteboard: React.FC<WhiteboardProps> = ({ isHost, roomId}) => {
+  const markerColors = ["#000000", "#0000ff", "#008000", "#ff0000"];
   const lineWidths = [1, 3, 5, 10];
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const contextRef = useRef<any>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [cursorMode, setCursorMode] = useState(isHost ? "pen" : "pointer"); //for viewers it will always be pointer mode
-  const [markerColor, setMarkerColor] = useState("#000000");
+  const [markerColor, setMarkerColor] = useState("black");
   const [markerLineWidth, setMarkerLineWidth] = useState(5);
 
+  useEffect(() => {
+    const cleanupWebSocket = WhiteboardConnection({
+      roomID: roomId ?? "",
+      onReceived: (action: WhiteboardAction) => {
+        console.log("Received WhiteboardAction:", action);
+        if (!isHost) {
+          if (action.TYPE.endsWith("_start") && action.X && action.Y && action.COLOR) {
+            setMarkerColor(action.COLOR);
+            startDrawOnCanvas(action.X, action.Y);
+          } else if ((action.TYPE === "draw" || action.TYPE == "erase") && action.X && action.Y) {
+            drawingOnCanvas(action.X, action.Y);
+          } else if (action.TYPE.endsWith("_stop") && action.X && action.Y) {
+            stopDrawOnCanvas();
+          } else if (action.TYPE === "change_marker_color" && action.COLOR) {
+            setMarkerColor(action.COLOR);
+          } else if (action.TYPE === "change_marker_line_width" && action.LINE_WIDTH) {
+            setMarkerLineWidth(action.LINE_WIDTH);
+          } else if (action.TYPE === "clear_canvas") {
+            if (canvasRef.current) {
+              contextRef.current.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+            }
+          }
+        }
+      },
+    });
+    return cleanupWebSocket;
+  }, [roomId]);
+
+  // setup for all users
   useEffect(() => {
     const canvas = canvasRef.current;
     if (canvas) {
@@ -53,109 +73,82 @@ const Whiteboard: React.FC<WhiteboardProps> = ({ isHost, data, sendActionForWhit
 
   useEffect(() => {
     const context = contextRef.current;
-
-    if (data?.type == "draw" || data?.type == "erase") {
-      if (!isDrawing) {
-        setIsDrawing(true);
-        context.beginPath();
-        if (data.type == "erase") {
-          context.strokeStyle = "white";
-        } else {
-          context.strokeStyle = data.color;
-        }
-        context.moveTo(data.x, data.y);
-      }
-      context.lineTo(data.x, data.y);
-      context.stroke();
-    }
-
-    else if (data?.type == "draw_stop" || data?.type == "erase_stop") {
-      setIsDrawing(false);
-      context.closePath();
-    }
-
-    else if (data?.type == "change_marker_color" && data.color) {
-      setMarkerColor(data.color);
-      context.beginPath();
-      context.strokeStyle = data.color;
-    }
-
-    else if (data?.type == "change_marker_line_width" && data.lineWidth) {
-      setMarkerLineWidth(data.lineWidth);
-      context.beginPath();
-      context.lineWidth = data.lineWidth;
-    }
-
-    else if (data?.type == "clear_canvas" && canvasRef.current) {
-      context.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-    }
-   
-  }, [data]);
-
-  useEffect(() => {
-    const context = contextRef.current;
     if (markerColor) context.strokeStyle = markerColor;
     if (markerLineWidth) context.lineWidth = markerLineWidth;
 
-  }, [markerColor, markerLineWidth])
+  }, [markerColor, markerLineWidth]);
 
-  const startDrawing = ({ nativeEvent }: any) => {
-    if (!isHost || isDrawing || cursorMode == "pointer") return;
-    const { offsetX, offsetY } = nativeEvent;
+  // canvas functions
+  const startDrawOnCanvas = (x: number, y: number) => {
     if (cursorMode == "eraser") contextRef.current.strokeStyle = "white";
     contextRef.current.beginPath();
-    contextRef.current.moveTo(offsetX, offsetY);
+    contextRef.current.moveTo(x, y);
     setIsDrawing(true);
-  };
-
-  const draw = ({ nativeEvent }: any) => {
-    if (!isHost || !isDrawing || cursorMode == "pointer") return;
-    const { offsetX, offsetY } = nativeEvent;
-    contextRef.current.lineTo(offsetX, offsetY);
-    contextRef.current.stroke();
-    if (sendActionForWhiteboard) {
-      sendActionForWhiteboard({
-        type: cursorMode == "pen" ? "draw" : "erase",
-        x: offsetX, 
-        y: offsetY, 
-        color: cursorMode == "pen" ? markerColor : "white", 
-        lineWidth: markerLineWidth
-      });
-    }
-  };
-
-  const stopDrawing = () => {
-    if (!isHost || cursorMode == "pointer") return;
-    contextRef.current.closePath();
-    setIsDrawing(false);
-
-    if (sendActionForWhiteboard) {
-      sendActionForWhiteboard({
-        type: cursorMode == "pen" ? "draw_stop" : "erase_stop"
-      });
-    }
-  };
-
-  const changeMarkerColor = (color: string) => {
-    if (color === markerColor) return;
-    if (sendActionForWhiteboard) {
-      setMarkerColor(color);
-      sendActionForWhiteboard({
-        type: "change_marker_color",
-        color
-      });
-    }
   }
 
-  const changeMarkerLineWidth = (lineWidth: number) => {
-    if (lineWidth === markerLineWidth) return;
-    if (sendActionForWhiteboard) {
+  const drawingOnCanvas = (x: number, y: number) => {
+    contextRef.current.lineTo(x, y);
+    contextRef.current.stroke();
+  }
+
+  const stopDrawOnCanvas = () => {
+    contextRef.current.closePath();
+    setIsDrawing(false);
+  }
+
+  // host actions
+  const hostStartDrawing = ({ nativeEvent }: any) => {
+    if (!isHost || isDrawing || cursorMode == "pointer") return;
+    const { offsetX, offsetY } = nativeEvent;
+    startDrawOnCanvas(offsetX, offsetY);
+    sendWhiteboardAction({
+      SESSION_ID: roomId,
+      TYPE: cursorMode == "pen" ? "draw_start" : "erase_start",
+      COLOR: cursorMode == "pen" ? markerColor : "white",
+      X: offsetX, 
+      Y: offsetY
+    })
+  };
+
+  const hostDrawing = ({ nativeEvent }: any) => {
+    if (!isHost || !isDrawing || cursorMode == "pointer") return;
+    const { offsetX, offsetY } = nativeEvent;
+    drawingOnCanvas(offsetX, offsetY);
+    sendWhiteboardAction({
+      SESSION_ID: roomId ?? "",
+      TYPE: cursorMode == "pen" ? "draw" : "erase",
+      X: offsetX, 
+      Y: offsetY
+    });
+  };
+
+  const hostStopDrawing = () => {
+    if (!isHost || cursorMode == "pointer") return;
+    stopDrawOnCanvas();
+    sendWhiteboardAction({
+      SESSION_ID: roomId ?? "",
+      TYPE: cursorMode == "pen" ? "draw_stop" : "erase_stop"
+    });
+  };
+
+  const hostChangeMarkerColor = (color: string) => {
+    if (!isHost || color === markerColor) return;
+    setMarkerColor(color);
+    sendWhiteboardAction({
+      SESSION_ID: roomId ?? "",
+      TYPE: "change_marker_color",
+      COLOR: color
+    });
+  }
+
+  const hostChangeMarkerLineWidth = (lineWidth: number) => {
+    if (!isHost || lineWidth === markerLineWidth) return;
       setMarkerLineWidth(lineWidth);
-      sendActionForWhiteboard({
-        type: "change_marker_line_width",
-        lineWidth
+      sendWhiteboardAction({
+        SESSION_ID: roomId ?? "",
+        TYPE: "change_marker_line_width",
+        LINE_WIDTH: lineWidth
       });
-    }
   }
 
   const togglePointerAndPenMode = () => {
@@ -164,9 +157,12 @@ const Whiteboard: React.FC<WhiteboardProps> = ({ isHost, data, sendActionForWhit
   }
   
   const clearCanvas = () => {
-    if (canvasRef.current && sendActionForWhiteboard) {
+    if (canvasRef.current) {
       contextRef.current.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-      sendActionForWhiteboard({type: "clear_canvas"})
+      sendWhiteboardAction({
+        SESSION_ID: roomId ?? "",
+        TYPE: "clear_canvas"
+      });
     }
   }
 
@@ -174,10 +170,10 @@ const Whiteboard: React.FC<WhiteboardProps> = ({ isHost, data, sendActionForWhit
     <div className="flex justify-center items-center w-full h-full">
       <canvas
         ref={canvasRef}
-        onMouseDown={startDrawing}
-        onMouseMove={draw}
-        onMouseUp={stopDrawing}
-        onMouseLeave={stopDrawing}
+        onMouseDown={hostStartDrawing}
+        onMouseMove={hostDrawing}
+        onMouseUp={hostStopDrawing}
+        onMouseLeave={hostStopDrawing}
         className={`${cursorMode}-cursor`}
         style={{ border: "1px solid black", background: "white"}}
       />
@@ -206,14 +202,14 @@ const Whiteboard: React.FC<WhiteboardProps> = ({ isHost, data, sendActionForWhit
                   key={`color-${index}`}
                   className="w-16 h-6 p-1 marker-color" 
                   style={{backgroundColor: `${color}`}}
-                  onClick={() => changeMarkerColor(color)}>
+                  onClick={() => hostChangeMarkerColor(color)}>
                 </div>
               ))}
               <Input
                 type="color"
                 id="background-color"
-                value={"#000000"}
-                onChange={(e) => changeMarkerColor(e.target.value)}
+                value={markerColor}
+                onChange={(e) => hostChangeMarkerColor(e.target.value)}
                 className="w-16 h-8 p-1"
               />
             </div>
@@ -222,9 +218,16 @@ const Whiteboard: React.FC<WhiteboardProps> = ({ isHost, data, sendActionForWhit
             <Button
             variant="secondary"
             size="sm"
-            className="bg-gray-800 text-white"
+            className="bg-gray-800 text-white gap-4"
           >
-              <Palette className="h-4 w-4" />
+             <p>Color:</p>
+             <Input
+                type="color"
+                id="background-color"
+                value={markerColor}
+                style={{pointerEvents: "none"}}
+                className="w-16 h-8 p-1"
+              />
             </Button>
           
           </PopoverTrigger>
@@ -239,7 +242,7 @@ const Whiteboard: React.FC<WhiteboardProps> = ({ isHost, data, sendActionForWhit
                   <div
                     key={`line-width-${index}`}
                     className={`w-28 h-8 p-1 border-${width}px`}
-                    onClick={() => changeMarkerLineWidth(width)}
+                    onClick={() => hostChangeMarkerLineWidth(width)}
                   >
                   </div>
                 ))}
@@ -249,7 +252,7 @@ const Whiteboard: React.FC<WhiteboardProps> = ({ isHost, data, sendActionForWhit
                   max="10"
                   step="1"
                   value={markerLineWidth}
-                  onChange={(e) => changeMarkerLineWidth(Number(e.target.value))}
+                  onChange={(e) => hostChangeMarkerLineWidth(Number(e.target.value))}
                   className="flex-1 w-28 h-8 p-1"
                 />
             </div>
@@ -258,9 +261,14 @@ const Whiteboard: React.FC<WhiteboardProps> = ({ isHost, data, sendActionForWhit
             <Button
               variant="secondary"
               size="sm"
-              className="bg-gray-800 text-white"
+              className="bg-gray-800 text-white flex items-center justify-center gap-4"
             >
-              <Tally3 className="h-4 w-4" />
+             <p>Line Width:</p>
+             <div
+                key={`line-width-selected`}
+                className={`w-14 border-${markerLineWidth}px`}
+             >
+             </div>
             </Button>
           </PopoverTrigger>
         </Popover>
@@ -308,7 +316,6 @@ const Whiteboard: React.FC<WhiteboardProps> = ({ isHost, data, sendActionForWhit
             variant="secondary"
             className="bg-gray-800 text-white"
             size="sm"
-            onClick={() => console.log("clear canvas")}
           >
             Clear Canvas
           </Button>

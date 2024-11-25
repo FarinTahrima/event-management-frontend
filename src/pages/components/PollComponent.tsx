@@ -18,7 +18,7 @@ const PollComponent: React.FC<PollComponentProps> = ({ roomId, isHost }) => {
     const cleanupWebSocket = LivePollConnection({
       roomID: roomId ?? "",
       onReceived: (action: LivePollAction) => {
-        console.log("Received ModuleAction:", action);
+        console.log("Received LivePollAction:", action);
         if (action.TYPE == "poll_vote" && action.POLL) {
           setPoll(JSON.parse(action.POLL));
         }
