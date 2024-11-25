@@ -32,7 +32,7 @@ import {
 } from "@/utils/messaging-client";
 import { useAppContext } from "@/contexts/AppContext";
 import VideoJSSynced from "@/components/VideoJSSynced";
-import { Components, ComponentItem, Poll, videoSource } from "@/data/componentData";
+import { Components, ComponentItem, videoSource } from "@/data/componentData";
 import PollComponent from "./components/PollComponent";
 import SlideShow from "./components/SlideShow";
 import Whiteboard, { WhiteBoardData } from "./components/Whiteboard";
@@ -61,9 +61,6 @@ const EventPage: React.FC = () => {
   });
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const { user } = useAppContext();
-  const [voteAction, setVoteAction] = useState<ModuleAction>();
-  const [poll, setPoll] = useState(Poll);
-  const [pollMode, setPollMode] = useState<"vote" | "result">("vote");
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
 
   useEffect(() => {
@@ -71,10 +68,6 @@ const EventPage: React.FC = () => {
       roomID: roomId ?? "",
       onReceived: (action: ModuleAction) => {
         console.log("Received ModuleAction:", action);
-        if (action.TYPE == "poll_vote" && action.CONTENT) {
-          setVoteAction(action);
-        }
-
         const component = Components.find(
           (component) => component.id === action.ID
         );
@@ -193,32 +186,7 @@ const EventPage: React.FC = () => {
     }
   };
 
-  const changePollToResultViewForViewers = () => {
-    console.log("to switch poll to result view for viewers");
-    sendModuleAction({
-      ID: "55",
-      TYPE: "poll_result",
-      SESSION_ID: roomId ?? "",
-      SENDER: user?.username ?? "",
-      TIMESTAMP: new Date().toISOString(),
-      CONTENT: JSON.stringify(Poll),
-      IS_LIVE: streamStatus.isLive,
-    });
-  };
-
-  const changeResultToPollViewForViewers = () => {
-    console.log("to switch to poll view for viewers");
-    sendModuleAction({
-      ID: "56",
-      TYPE: "poll_view",
-      SESSION_ID: roomId ?? "",
-      SENDER: user?.username ?? "",
-      TIMESTAMP: new Date().toISOString(),
-      CONTENT: JSON.stringify(Poll),
-      IS_LIVE: streamStatus.isLive,
-    });
-  };
-
+  
   const sendActionForWhiteboard = (data: WhiteBoardData) => {
     sendWhiteboardAction({
       SESSION_ID: roomId ?? "",
@@ -325,19 +293,8 @@ const EventPage: React.FC = () => {
                       )}
                       {currentComponent.type === "poll" && roomId && (
                         <PollComponent
-                          poll={poll}
-                          setPoll={setPoll}
-                          pollMode={pollMode}
-                          setPollMode={setPollMode}
                           isHost={true}
                           roomId={roomId}
-                          voteAction={voteAction}
-                          changeToResultViewForViewers={
-                            changePollToResultViewForViewers
-                          }
-                          changeToPollViewForViewers={
-                            changeResultToPollViewForViewers
-                          }
                         />
                       )}
                       {currentComponent.type === "whiteboard" && roomId && (

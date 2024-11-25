@@ -5,7 +5,6 @@ import { Button } from './shadcn/ui/button';
 
 interface PollResultProps {
     poll: PollResponse;
-    totalVotes: number;
     isHost: boolean;
     changeToResult?: () => void;
     changeToView?: () => void;

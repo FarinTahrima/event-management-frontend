@@ -2,86 +2,91 @@ import React, { useEffect, useState } from 'react';
 import PollResult from '@/components/PollResult';
 import PollView from '@/components/PollView';
 import { PollResponse } from '../host/HostCreatePoll';
-import { ModuleAction } from '../EventPage';
+import { LivePollAction, LivePollConnection, sendLivePollAction } from '@/utils/messaging-client';
+import { Poll } from '@/data/componentData';
 
 interface PollComponentProps {
   roomId: string;
   isHost: boolean;
-  pollMode: "vote" | "result";
-  poll: PollResponse;
-  setPoll: (poll: PollResponse) => void;
-  setPollMode: (pollMode: "vote" | "result") => void;
-  voteAction?: ModuleAction;
-  onVoteSubmit?:  (pollId: number, optionId: number) => void;
-  changeToResultViewForViewers?: () => void;
-  changeToPollViewForViewers?: () => void;
 }
 
-const PollComponent: React.FC<PollComponentProps> = ({ roomId, isHost, voteAction, pollMode, poll, setPollMode, onVoteSubmit, changeToResultViewForViewers, changeToPollViewForViewers}) => {
-  const [count, setCount] = useState(0);
-
-  function handleClick() {
-    console.log(count + 1);
-    setCount(count + 1);
-  }
+const PollComponent: React.FC<PollComponentProps> = ({ roomId, isHost }) => {
+  const [poll, setPoll] = useState<PollResponse>(Poll);
+  const [pollMode, setPollMode] = useState<"vote" | "result">("vote");
   
   useEffect(() => {
-    console.log("va", voteAction);
-    if (voteAction?.CONTENT) {
-      const ids = voteAction.CONTENT.split("_");
-      incrementVote(Number(ids[0]), Number(ids[1]));
-      handleClick();
-    }
-  }, [voteAction])
-
-  const incrementVote = (pollId: number, pollOptionId: number) => {
-    if (poll) {
-      console.log("increment vote for " + pollId);
-      poll.pollOptionList.filter(option => pollOptionId == option.pollOptionId).forEach(
-        function(op) {
-          op.voteCount = op.voteCount + 1;
+    const cleanupWebSocket = LivePollConnection({
+      roomID: roomId ?? "",
+      onReceived: (action: LivePollAction) => {
+        console.log("Received ModuleAction:", action);
+        if (action.TYPE == "poll_vote" && action.POLL) {
+          setPoll(JSON.parse(action.POLL));
         }
-      );
-    }
-  }
+        else if (action.TYPE === "poll_result" && action.POLL) {
+          setPoll(JSON.parse(action.POLL));
+          setPollMode("result");
+        }
+        else if (action.TYPE === "poll_view" && action.POLL) {
+          setPoll(JSON.parse(action.POLL));
+          setPollMode("vote");
+        }
+      }
+    });
+    return cleanupWebSocket;
+  }, [roomId]);
 
   const changeToResult = () => {
-    if (changeToResultViewForViewers) {
-      changeToResultViewForViewers();
-    }
-  }
-  const switchToPollResult = () => {
-    setPollMode("result");
+    console.log("to switch poll to result view for viewers");
+    sendLivePollAction({
+      SESSION_ID: roomId ?? "",
+      TYPE: "poll_result",
+      IS_HOST: false,
+      POLL: JSON.stringify(poll),
+    })
   }
 
   const changeToPollView = () => {
-    if (changeToPollViewForViewers) {
-      changeToPollViewForViewers();
-      switchToPollView();
-    }
-  }
-  const switchToPollView = () => {
+    console.log("to switch to poll view for viewers");
+    sendLivePollAction({
+      SESSION_ID: roomId ?? "",
+      TYPE: "poll_view",
+      IS_HOST: false,
+      POLL: JSON.stringify(poll),
+    })
     setPollMode("vote");
-  }
+  };
+
+  const onVoteSubmit = (optionId: number) => {
+    console.log("voting for " + optionId);
+    poll.pollOptionList.filter(option => optionId == option.pollOptionId).forEach(
+      function(op) {
+        op.voteCount = op.voteCount + 1;
+      }
+    );
+    sendLivePollAction({
+      SESSION_ID: roomId ?? "",
+      TYPE: "poll_vote",
+      IS_HOST: false,
+      POLL: JSON.stringify(poll)
+    })
+  };
 
   return (
     <div>
       {pollMode === "result" && (
         <PollResult 
-          poll={poll} 
-          totalVotes={count}
+          poll={poll}
           isHost={isHost}
           changeToResult={changeToResult}
           changeToView={changeToPollView}
-        
         />
       )}
       {pollMode === "vote" && (
-        <PollView 
+        <PollView
           poll={poll}
           roomID={roomId}
           isHost={isHost}
-          onClickViewResult={switchToPollResult}
+          onClickViewResult={() => setPollMode("result")}
           onVoteSubmit={onVoteSubmit}
         />
       )}
