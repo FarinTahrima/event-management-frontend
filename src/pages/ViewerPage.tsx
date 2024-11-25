@@ -8,9 +8,7 @@ import {
   ModuleAction,
   ModuleConnection,
   StreamConnection,
-  StreamStatus,
-  WhiteboardAction,
-  WhiteboardConnection,
+  StreamStatus
 } from "@/utils/messaging-client";
 import { useParams } from "react-router-dom";
 import { ComponentItem, Components, videoSource } from "../data/componentData";
@@ -19,7 +17,7 @@ import VideoJSSynced from "@/components/VideoJSSynced";
 import { useCallback, useEffect, useState } from "react";
 import PollComponent from "./components/PollComponent";
 import ViewerSideQuestionComponent from "./components/ViewerSideQuestionComponent";
-import Whiteboard, { WhiteBoardData } from "./components/Whiteboard";
+import Whiteboard from "./components/Whiteboard";
 import SlideShow from "./components/SlideShow";
 import { SelectedQuestionDisplay } from "./components/InteractiveQA";
 import { ChevronUp, ChevronDown, Info } from "lucide-react";
@@ -34,7 +32,6 @@ const ViewerPage: React.FC = () => {
   const [isRoomDetailsExpanded, setIsRoomDetailsExpanded] = useState(true);
   const { roomId } = useParams();
   const roomID = roomId ? roomId.toString() : "";
-  const [data, setData] = useState<WhiteBoardData>();
 
   // Handler for module actions that considers stream status
   const handleModuleAction = useCallback(
@@ -161,39 +158,6 @@ const ViewerPage: React.FC = () => {
     };
   }, [roomId]);
 
-  useEffect(() => {
-    const cleanupWebSocket = WhiteboardConnection({
-      roomID: roomID,
-      onReceived: (action: WhiteboardAction) => {
-        console.log("Received WhiteboardAction:", action);
-        if (action.TYPE == "draw") {
-          setData({
-            type: action.TYPE,
-            x: action.X,
-            y: action.Y,
-            color: action.COLOR,
-            lineWidth: action.LINE_WIDTH,
-          });
-        } else if (action.TYPE == "erase") {
-          setData({
-            type: action.TYPE,
-            x: action.X,
-            y: action.Y,
-            lineWidth: action.LINE_WIDTH,
-          });
-        } else if (action.TYPE == "change_marker_color") {
-          setData({ type: action.TYPE, color: action.COLOR });
-        } else if (action.TYPE == "change_marker_line_width") {
-          setData({ type: action.TYPE, lineWidth: action.LINE_WIDTH });
-        } else {
-          setData({ type: action.TYPE });
-        }
-      },
-    });
-
-    return cleanupWebSocket;
-  }, [roomId]);
-
   const videoJSOptions = {
     sources: [
       {
@@ -266,7 +230,7 @@ const ViewerPage: React.FC = () => {
                   />
                 )}
                 {currentComponent.type === "whiteboard" && roomId && (
-                  <Whiteboard isHost={false} data={data} setData={setData} />
+                  <Whiteboard isHost={false} roomId={roomId} />
                 )}
                 {currentComponent.type === "interactive-qa" &&
                   roomId && (

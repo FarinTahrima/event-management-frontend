@@ -24,18 +24,15 @@ import {
   ModuleConnection,
   sendModuleAction,
   sendStreamStatus,
-  sendWhiteboardAction,
   StreamConnection,
-  StreamStatus,
-  WhiteboardAction,
-  WhiteboardConnection,
+  StreamStatus
 } from "@/utils/messaging-client";
 import { useAppContext } from "@/contexts/AppContext";
 import VideoJSSynced from "@/components/VideoJSSynced";
 import { Components, ComponentItem, videoSource } from "@/data/componentData";
 import PollComponent from "./components/PollComponent";
 import SlideShow from "./components/SlideShow";
-import Whiteboard, { WhiteBoardData } from "./components/Whiteboard";
+import Whiteboard from "./components/Whiteboard";
 import InteractiveQAComponent from "./components/InteractiveQA";
 
 const videoJSOptions = {
@@ -107,16 +104,6 @@ const EventPage: React.FC = () => {
     return cleanupStreamWebSocket;
   }, [roomId]);
 
-  useEffect(() => {
-    const cleanupWebSocket = WhiteboardConnection({
-      roomID: roomId ?? "",
-      onReceived: (action: WhiteboardAction) => {
-        console.log("Received ModuleAction:", action);
-      },
-    });
-    return cleanupWebSocket;
-  }, [roomId]);
-
   const handleGoLive = () => {
     const newStatus = !streamStatus.isLive;
     setStreamStatus((prev) => ({ ...prev, isLive: newStatus }));
@@ -184,18 +171,6 @@ const EventPage: React.FC = () => {
     if (currentComponent && currentComponent.id === id) {
       setCurrentComponent(updatedComponents[0] || null);
     }
-  };
-
-  
-  const sendActionForWhiteboard = (data: WhiteBoardData) => {
-    sendWhiteboardAction({
-      SESSION_ID: roomId ?? "",
-      TYPE: data.type,
-      X: data.x,
-      Y: data.y,
-      COLOR: data.color,
-      LINE_WIDTH: data.lineWidth,
-    });
   };
 
   return (
@@ -300,7 +275,7 @@ const EventPage: React.FC = () => {
                       {currentComponent.type === "whiteboard" && roomId && (
                         <Whiteboard
                           isHost
-                          sendActionForWhiteboard={sendActionForWhiteboard}
+                          roomId={roomId}
                         />
                       )}
                       {currentComponent.type === "interactive-qa" && roomId && (
