@@ -3,7 +3,6 @@ import SockJS from "sockjs-client";
 import * as apiClient from "@/utils/api-client";
 import { Message } from "@/types/types";
 import { Emoji } from "@/components/EmojiReaction";
-import { PollResponse } from "@/pages/host/HostCreatePoll";
 
 export interface StreamStatus {
   isLive: boolean;
@@ -47,10 +46,10 @@ export interface InteractiveQAAction {
 }
 
 export interface LivePollAction {
-  SESSION_ID: string, 
-  TYPE: string,
-  IS_HOST: boolean, 
-  POLL: PollResponse
+  SESSION_ID: string;
+  TYPE: string;
+  IS_HOST: boolean;
+  POLL?: string;
 }
 
 export interface MessagingClientOptions {
@@ -471,7 +470,7 @@ export const LivePollConnection = (options: LivePollClientOptions) => {
         livePollClient.subscribe(topic, (message: any) => {
           console.log(message);
           const newAction = JSON.parse(message.body);
-          console.log(`New livePollAction received: ${newAction.TYPE}`);
+          console.log(`New WhiteboardAction received: ${newAction.TYPE}`);
           onReceived(newAction);
         });
       },
@@ -493,7 +492,7 @@ export const LivePollConnection = (options: LivePollClientOptions) => {
 
 export const sendLivePollAction = async (action: LivePollAction) => {
   if (livePollClient && livePollClient.connected) {
-    console.log("Sending LivePoll action:", action);
+    console.log("Sending live poll action:", action);
     livePollClient.send("/app/livePollAction", {}, JSON.stringify(action));
   } else {
     livePollClient = Stomp.over(
@@ -503,7 +502,7 @@ export const sendLivePollAction = async (action: LivePollAction) => {
         )
     );
     livePollClient.connect({}, () => {
-      console.log("Reconnected and sending LivePoll action:", action);
+      console.log("Reconnected and sending live poll action:", action);
       livePollClient.send("/app/livePollAction", {}, JSON.stringify(action));
     });
   }

@@ -8,7 +8,7 @@ interface PollViewProps {
     poll?: PollResponse;
     roomID: string;
     isHost: boolean;
-    onVoteSubmit?:  (pollId: number, optionId: number) => void;
+    onVoteSubmit?:  (optionId: number) => void;
     onClickViewResult?: () => void;
 };
 
@@ -24,10 +24,11 @@ export const PollView : React.FC<PollViewProps> = ({ poll, isHost, onVoteSubmit,
 
     function selectOption() {
         if(poll && optionChecked && onVoteSubmit) {
-            onVoteSubmit(poll.pollId, optionChecked.pollOptionId)
+            onVoteSubmit(optionChecked.pollOptionId);
             setVoted(true);
         }
     }
+    
     return (
         <div className="text-white justify-center w-full max-w-6xl mx-auto p-6">
             <form className="space-y-4 text-white">
