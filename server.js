@@ -26,14 +26,22 @@ const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
 async function analyzeSentiment(text) {
   try {
-    const sentimentPrompt = `Analyze the sentiment of the following text and return a JSON object with exactly these two properties:
-    - "label": must be one of: "1 star", "2 stars", "3 stars", "4 stars", or "5 stars"
-    - "score": the corresponding number (1-5)
-    
+    const sentimentPrompt = `
+    Analyze the sentiment of the following text, submitted during a live sales event for the new Nova-Book Z laptop. Classify the sentiment based on the level of positivity expressed about the event, product, or experience.
+
+    Return a JSON object in this exact format:
+
+    "label": One of these values only: "1 star", "2 stars", "3 stars", "4 stars", or "5 stars".
+    "score": The corresponding integer (1–5).
+
     Text to analyze: "${text}"
-    
-    Return ONLY the raw JSON object, with NO markdown formatting, NO backticks, and NO "json" prefix. Example:
-    {"label": "4 stars", "score": 4}`;
+
+    Output Rules:
+
+    Base the sentiment score on the text’s tone, positivity, and overall impression.
+    Return only the JSON object in this exact format: {"label": "X stars", "score": X}.
+    Do not include any additional text, symbols, or formatting (e.g., no markdown, no backticks).
+    `;
 
     const result = await model.generateContent(sentimentPrompt);
     const response = result.response
