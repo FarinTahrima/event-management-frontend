@@ -62,18 +62,6 @@ const SHIPS: Ship[] = [
     { name: 'Destroyer', size: 2 }
 ];
 
-const HUNT_PATTERNS = [
-    [0, 0], [0, 2], [0, 4], [0, 6], [0, 8],
-    [1, 1], [1, 3], [1, 5], [1, 7], [1, 9],
-    [2, 0], [2, 2], [2, 4], [2, 6], [2, 8],
-    [3, 1], [3, 3], [3, 5], [3, 7], [3, 9],
-    [4, 0], [4, 2], [4, 4], [4, 6], [4, 8],
-    [5, 1], [5, 3], [5, 5], [5, 7], [5, 9],
-    [6, 0], [6, 2], [6, 4], [6, 6], [6, 8],
-    [7, 1], [7, 3], [7, 5], [7, 7], [7, 9],
-    [8, 0], [8, 2], [8, 4], [8, 6], [8, 8],
-    [9, 1], [9, 3], [9, 5], [9, 7], [9, 9]
-];
 
 const placeAIShips = (): AIShip[] => {
     const aiShips: AIShip[] = [];
@@ -163,7 +151,7 @@ const Battleship: React.FC = () => {
             ['left', 0, -1]
         ];
 
-        for (const [dir, dx, dy] of directions) {
+        for (const [, dx, dy] of directions) {
             const checkRow = row + dx;
             const checkCol = col + dy;
             
@@ -284,70 +272,81 @@ const Battleship: React.FC = () => {
     const getProbabilityBasedMove = (state: GameState): { row: number; col: number } => {
         const cells: ProbabilityCell[] = [];
         const heatMap = Array(10).fill(0).map(() => Array(10).fill(0));
+        
+        // Count remaining ships
+        const sunkShips = new Set<number>();
+        state.aiMoveHistory.forEach(move => {
+            if (move.hit) {
+                // Check if this hit is part of a completed ship
+                state.placedShips.forEach(ship => {
+                    const shipCells = [];
+                    for (let i = 0; i < ship.size; i++) {
+                        const row = ship.horizontal ? ship.position!.row : ship.position!.row + i;
+                        const col = ship.horizontal ? ship.position!.col + i : ship.position!.col;
+                        shipCells.push({ row, col });
+                    }
+                    
+                    if (shipCells.every(cell => 
+                        state.aiMoveHistory.some(m => 
+                            m.hit && m.row === cell.row && m.col === cell.col
+                        )
+                    )) {
+                        sunkShips.add(ship.size);
+                    }
+                });
+            }
+        });
+    
+        const remainingShips = SHIPS.filter(ship => !sunkShips.has(ship.size));
+        const allShipsSunk = remainingShips.length === 0;
 
-        if (!state.aiHuntMode) {
-            HUNT_PATTERNS.forEach(([row, col]) => {
-                if (!state.playerHits[row][col]) {
-                    heatMap[row][col] += 3; 
-                }
-            });
-        }
-    
-        // Calculate ship placement probabilities
-        for (let row = 0; row < 10; row++) {
-            for (let col = 0; col < 10; col++) {
-                if (state.playerHits[row][col]) continue;
-    
-                // Check horizontal placements
-                for (const ship of SHIPS) {
-                    if (col + ship.size <= 10) {
-                        let valid = true;
-                        let adjacentHit = false;
-                        
-                        for (let i = 0; i < ship.size; i++) {
-                            if (state.playerHits[row][col + i]) {
-                                valid = false;
-                                break;
-                            }
-                            // Check adjacent cells for hits
-                            if (row > 0 && state.playerHits[row - 1][col + i]) adjacentHit = true;
-                            if (row < 9 && state.playerHits[row + 1][col + i]) adjacentHit = true;
+        if (allShipsSunk || !state.aiHuntMode) {
+            for (let row = 0; row < 10; row++) {
+                for (let col = 0; col < 10; col++) {
+                    if (!state.playerHits[row][col]) {
+                        heatMap[row][col] = 1 + Math.random() * 2;
+
+                        if ((row + col) % 2 === 0) {
+                            heatMap[row][col] += 0.5;
                         }
-                        
-                        if (valid) {
-                            heatMap[row][col] += ship.size;
-                            if (adjacentHit) heatMap[row][col] += 2;
-                        }
+
+                        const distanceFromCenter = Math.abs(4.5 - row) + Math.abs(4.5 - col);
+                        heatMap[row][col] += (10 - distanceFromCenter) * 0.1;
                     }
                 }
-    
-                // Check vertical placements
-                for (const ship of SHIPS) {
-                    if (row + ship.size <= 10) {
-                        let valid = true;
-                        let adjacentHit = false;
-                        
-                        for (let i = 0; i < ship.size; i++) {
-                            if (state.playerHits[row + i][col]) {
-                                valid = false;
-                                break;
+            }
+        } else {
+            for (let row = 0; row < 10; row++) {
+                for (let col = 0; col < 10; col++) {
+                    if (!state.playerHits[row][col]) {
+                        remainingShips.forEach(ship => {
+                            if (col + ship.size <= 10) {
+                                let valid = true;
+                                for (let i = 0; i < ship.size; i++) {
+                                    if (state.playerHits[row][col + i]) {
+                                        valid = false;
+                                        break;
+                                    }
+                                }
+                                if (valid) heatMap[row][col] += ship.size;
                             }
-                            // Check adjacent cells for hits
-                            if (col > 0 && state.playerHits[row + i][col - 1]) adjacentHit = true;
-                            if (col < 9 && state.playerHits[row + i][col + 1]) adjacentHit = true;
-                        }
-                        
-                        if (valid) {
-                            heatMap[row][col] += ship.size;
-                            if (adjacentHit) heatMap[row][col] += 2;
-                        }
+
+                            if (row + ship.size <= 10) {
+                                let valid = true;
+                                for (let i = 0; i < ship.size; i++) {
+                                    if (state.playerHits[row + i][col]) {
+                                        valid = false;
+                                        break;
+                                    }
+                                }
+                                if (valid) heatMap[row][col] += ship.size;
+                            }
+                        });
+                        heatMap[row][col] += Math.random() * 2;
                     }
                 }
-
-                heatMap[row][col] += Math.random() * 2;
             }
         }
-
         for (let row = 0; row < 10; row++) {
             for (let col = 0; col < 10; col++) {
                 if (!state.playerHits[row][col] && heatMap[row][col] > 0) {
@@ -361,8 +360,9 @@ const Battleship: React.FC = () => {
         }
 
         cells.sort((a, b) => b.weight - a.weight);
+        const numCandidates = allShipsSunk ? cells.length : Math.min(5, cells.length);
+        const topCandidates = cells.slice(0, numCandidates);
 
-        const topCandidates = cells.slice(0, Math.min(5, cells.length));
         const totalWeight = topCandidates.reduce((sum, cell) => sum + cell.weight, 0);
         let random = Math.random() * totalWeight;
         
@@ -373,8 +373,8 @@ const Battleship: React.FC = () => {
             }
         }
     
-        return cells[0]; 
-    };
+        return cells[0];
+    };    
     
     const isValidMove = (row: number, col: number, playerHits: boolean[][]): boolean => {
         return row >= 0 && row < 10 && col >= 0 && col < 10 && !playerHits[row][col];
