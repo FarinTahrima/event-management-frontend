@@ -24,8 +24,13 @@ export interface ComponentItem {
   imageUrl?: string;
   htmlContent?: React.ReactNode;
   getLink: ComponentLink;
-  images?: string[];
+  images?: SlideItem[];
   currentImageIndex?: number;
+}
+
+export interface SlideItem {
+  imageUrl: string;
+  caption: string;
 }
 
 export const videoSource = "http://localhost:8080/encoded/laptop/master.m3u8";
@@ -66,11 +71,16 @@ export const Components: ComponentItem[] = [
     type: "slide",
     title: "Slide Presentation",
     icon: <Image className="w-6 h-6" />,
-    content: "Welcome to the presentation!",
     images: [
-      "../slides/novabook1.png",
-      "../slides/novabook2.png",
-      "../slides/novabook3.png",
+      {
+        imageUrl: "../slides/novabook1.png",
+        caption: "Introduction to NovaBook - Our revolutionary platform",
+      },
+      {
+        imageUrl: "../slides/novabook2.png",
+        caption: "NovaBook has unmatched speed and efficiency",
+      },
+      { imageUrl: "../slides/novabook3.png", caption: "Immersive Graphics" },
     ],
     currentImageIndex: 0,
     getLink: "/slide",

@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { Button } from "@/components/shadcn/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { SlideItem } from "@/data/componentData";
 
 interface SlideShowProps {
-  images: string[];
+  images: SlideItem[];
   isHost?: boolean;
   currentIndex: number;
   onSlideChange?: (index: number) => void;
@@ -31,14 +32,20 @@ const SlideShow: React.FC<SlideShowProps> = ({
 
   return (
     <div className="relative w-full h-full">
-      <div className="w-full h-full flex items-center justify-center">
+      <div className="w-full h-full flex flex-col items-center justify-center">
         <img
-          src={images[currentIndex]}
+          src={images[currentIndex].imageUrl}
           alt={`Slide ${currentIndex + 1}`}
           className="max-w-full max-h-full object-contain"
         />
+        {isHost && (
+          <p className="text-white mt-4 font-semibold">
+            {images[currentIndex].caption}
+          </p>
+        )}
       </div>
 
+      {/* Slideshow controls - host only */}
       {isHost && (
         <div className="absolute left-0 right-0 bottom-0 -translate-y-1/2 flex justify-between px-4">
           <Button
