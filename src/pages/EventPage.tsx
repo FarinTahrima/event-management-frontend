@@ -1,24 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import { DragDropContext, Droppable } from "react-beautiful-dnd";
 import { Card } from "@/components/shadcn/ui/card";
-import { ScrollArea } from "@/components/shadcn/ui/scroll-area";
 import { Button } from "@/components/shadcn/ui/button";
-import {
-  ArrowLeft,
-  Plus,
-  ExternalLink,
-  Trash2,
-  GripVertical,
-} from "lucide-react";
-import LiveChat from "@/components/LiveChat";
+import { ArrowLeft } from "lucide-react";
 import LiveIndicator from "./components/LiveIndicator";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/shadcn/ui/dialog";
 import {
   ModuleAction,
   ModuleConnection,
@@ -29,11 +15,19 @@ import {
 } from "@/utils/messaging-client";
 import { useAppContext } from "@/contexts/AppContext";
 import VideoJSSynced from "@/components/VideoJSSynced";
-import { Components, ComponentItem, videoSource } from "@/data/componentData";
+import {
+  Components,
+  ComponentItem,
+  videoSource,
+  SlideItem,
+} from "@/data/componentData";
 import PollComponent from "./components/PollComponent";
 import SlideShow from "./components/SlideShow";
 import Whiteboard from "./components/Whiteboard";
 import InteractiveQAComponent from "./components/InteractiveQA";
+import HostSidebar from "./host/HostSidebar";
+import { PollResponse } from "./host/HostCreatePoll";
+import HostMainStage from "./host/HostMainStage";
 
 const videoJSOptions = {
   sources: [
@@ -44,6 +38,93 @@ const videoJSOptions = {
     },
   ],
 };
+
+// const HostMainStage = (props: HostMainStageProps) => {
+//   return (
+//     <div className="flex-[3] p-6 h-full overflow-hidden">
+//       <Droppable droppableId="main-stage">
+//         {(provided, snapshot) => (
+//           <Card
+//             ref={provided.innerRef}
+//             {...provided.droppableProps}
+//             className={`h-full flex flex-col items-center justify-center bg-gray-800 transition-colors ${snapshot.isDraggingOver ? "border-2 border-blue-500" : ""}`}
+//           >
+//             {props.currentComponent ? (
+//               <div className="text-center p-2 w-full h-full flex flex-col place-content-center">
+//                 <h2 className="text-xl font-semibold mb-4 text-white">
+//                   {props.currentComponent.title}
+//                 </h2>
+//                 {props.currentComponent.type === "slide" &&
+//                   props.currentComponent.images && (
+//                     <div className="w-full h-full ">
+//                       <SlideShow
+//                         images={props.currentComponent.images}
+//                         isHost={true}
+//                         currentIndex={props.currentSlideIndex}
+//                         onSlideChange={(index) => {
+//                           props.setCurrentSlideIndex(index);
+//                           sendModuleAction({
+//                             ID: props.currentComponent?.id ?? "",
+//                             TYPE: "slide_change",
+//                             SESSION_ID: props.roomId ?? "",
+//                             SENDER: props.user?.username ?? "",
+//                             TIMESTAMP: new Date().toISOString(),
+//                             CONTENT: JSON.stringify({
+//                               slideIndex: index,
+//                             }),
+//                             IS_LIVE: props.isLive,
+//                           });
+//                         }}
+//                       />
+//                     </div>
+//                   )}
+//                 {props.currentComponent.htmlContent &&
+//                   !props.currentComponent.imageUrl && (
+//                     <div className="max-w-full max-h-full overflow-auto">
+//                       {props.currentComponent.htmlContent}
+//                     </div>
+//                   )}
+//                 {props.currentComponent.type === "video" && (
+//                   <div className="flex justify-center items-center w-full h-full">
+//                     <VideoJSSynced
+//                       options={videoJSOptions}
+//                       roomID={props.roomId ?? ""}
+//                       isHost={true}
+//                       className="w-full h-full max-w-[80%] max-h-[80%] flex justify-center items-center"
+//                     />
+//                   </div>
+//                 )}
+//                 {props.currentComponent.type === "poll" && props.roomId && (
+//                   <PollComponent isHost={true} roomId={props.roomId} />
+//                 )}
+//                 {props.currentComponent.type === "whiteboard" &&
+//                   props.roomId && <Whiteboard isHost roomId={props.roomId} />}
+//                 {props.currentComponent.type === "interactive-qa" &&
+//                   props.roomId && (
+//                     <InteractiveQAComponent roomId={props.roomId} isHost />
+//                   )}
+//                 {props.currentComponent.content && (
+//                   <p className="text-white mb-4">
+//                     {props.currentComponent.content}
+//                   </p>
+//                 )}
+//               </div>
+//             ) : (
+//               <div
+//                 className={`text-gray-400 text-center ${snapshot.isDraggingOver ? "text-blue-400" : ""}`}
+//               >
+//                 {snapshot.isDraggingOver
+//                   ? "Drop component here"
+//                   : "Drag a component here or select from the sidebar"}
+//               </div>
+//             )}
+//             {provided.placeholder}
+//           </Card>
+//         )}
+//       </Droppable>
+//     </div>
+//   );
+// };
 
 const EventPage: React.FC = () => {
   const { roomId } = useParams<{ roomId: string }>();
@@ -211,217 +292,27 @@ const EventPage: React.FC = () => {
       <DragDropContext onDragEnd={handleDragEnd}>
         <div className="flex flex-1 overflow-hidden">
           {/* Main Stage */}
-          <div className="flex-[3] p-6 h-full overflow-hidden">
-            <Droppable droppableId="main-stage">
-              {(provided, snapshot) => (
-                <Card
-                  ref={provided.innerRef}
-                  {...provided.droppableProps}
-                  className={`h-full flex flex-col items-center justify-center bg-gray-800 transition-colors ${
-                    snapshot.isDraggingOver ? "border-2 border-blue-500" : ""
-                  }`}
-                >
-                  {currentComponent ? (
-                    <div className="text-center p-2 w-full h-full flex flex-col place-content-center">
-                      <h2 className="text-xl font-semibold mb-4 text-white">
-                        {currentComponent.title}
-                      </h2>
-                      {currentComponent.type === "slide" &&
-                        currentComponent.images && (
-                          <div className="w-full h-full ">
-                            <SlideShow
-                              images={currentComponent.images}
-                              isHost={true}
-                              currentIndex={currentSlideIndex}
-                              onSlideChange={(index) => {
-                                setCurrentSlideIndex(index);
-                                sendModuleAction({
-                                  ID: currentComponent.id,
-                                  TYPE: "slide_change",
-                                  SESSION_ID: roomId ?? "",
-                                  SENDER: user?.username ?? "",
-                                  TIMESTAMP: new Date().toISOString(),
-                                  CONTENT: JSON.stringify({
-                                    slideIndex: index,
-                                  }),
-                                  IS_LIVE: streamStatus.isLive,
-                                });
-                              }}
-                            />
-                          </div>
-                        )}
-                      {currentComponent.htmlContent &&
-                        !currentComponent.imageUrl && (
-                          <div className="max-w-full max-h-full overflow-auto">
-                            {currentComponent.htmlContent}
-                          </div>
-                        )}
-                      {currentComponent.type === "video" && (
-                        <div className="flex justify-center items-center w-full h-full">
-                          <VideoJSSynced
-                            options={videoJSOptions}
-                            roomID={roomId ?? ""}
-                            isHost={true}
-                            className="w-full h-full max-w-[80%] max-h-[80%] flex justify-center items-center"
-                          />
-                        </div>
-                      )}
-                      {currentComponent.type === "poll" && roomId && (
-                        <PollComponent isHost={true} roomId={roomId} />
-                      )}
-                      {currentComponent.type === "whiteboard" && roomId && (
-                        <Whiteboard isHost roomId={roomId} />
-                      )}
-                      {currentComponent.type === "interactive-qa" && roomId && (
-                        <InteractiveQAComponent roomId={roomId} isHost />
-                      )}
-                      {currentComponent.content && (
-                        <p className="text-white mb-4">
-                          {currentComponent.content}
-                        </p>
-                      )}
-                    </div>
-                  ) : (
-                    <div
-                      className={`text-gray-400 text-center ${
-                        snapshot.isDraggingOver ? "text-blue-400" : ""
-                      }`}
-                    >
-                      {snapshot.isDraggingOver
-                        ? "Drop component here"
-                        : "Drag a component here or select from the sidebar"}
-                    </div>
-                  )}
-                  {provided.placeholder}
-                </Card>
-              )}
-            </Droppable>
-          </div>
+          <HostMainStage
+            roomId={roomId ?? ""}
+            currentComponent={currentComponent ?? undefined}
+            isLive={streamStatus.isLive}
+            user={user}
+            currentSlideIndex={currentSlideIndex}
+            setCurrentSlideIndex={setCurrentSlideIndex}
+          ></HostMainStage>
 
           {/* Right Sidebar */}
-          <div className="flex-1 bg-gray-800 shadow-lg flex flex-col">
-            <div className="h-[50%] p-2 overflow-hidden">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-lg font-semibold">Modules</h2>
-                <Button onClick={() => setIsAddDialogOpen(true)} size="sm">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add
-                </Button>
-                <Dialog
-                  open={isAddDialogOpen}
-                  onClose={() => setIsAddDialogOpen(false)}
-                >
-                  <DialogHeader>
-                    <DialogTitle>Add New Component</DialogTitle>
-                  </DialogHeader>
-                  <DialogContent>
-                    <div className="grid gap-4 py-4">
-                      {Components.map((component) => (
-                        <Button
-                          key={component.id}
-                          onClick={() => {
-                            handleAddComponent(component);
-                            setIsAddDialogOpen(false);
-                          }}
-                          className="flex items-center justify-start"
-                        >
-                          {component.icon}
-                          <span className="ml-2">{component.title}</span>
-                        </Button>
-                      ))}
-                    </div>
-                  </DialogContent>
-                </Dialog>
-              </div>
-              <ScrollArea className="h-[calc(100%-2rem)]">
-                <Droppable droppableId="components">
-                  {(provided) => (
-                    <div
-                      {...provided.droppableProps}
-                      ref={provided.innerRef}
-                      className="space-y-2"
-                    >
-                      {components.map((item, index) => (
-                        <Draggable
-                          key={item.id}
-                          draggableId={item.id}
-                          index={index}
-                        >
-                          {(provided, snapshot) => (
-                            <Card
-                              ref={provided.innerRef}
-                              {...provided.draggableProps}
-                              className={`p-2 cursor-pointer relative ${
-                                snapshot.isDragging ? "opacity-50" : ""
-                              } ${
-                                currentComponent?.id === item.id
-                                  ? "bg-blue-600 hover:bg-blue-700 border-2 border-blue-400"
-                                  : "bg-gray-700 hover:bg-gray-600"
-                              }`}
-                              onClick={() => handleComponentClick(item)}
-                            >
-                              <div className="flex items-center">
-                                <div
-                                  {...provided.dragHandleProps}
-                                  className="mr-2"
-                                >
-                                  <GripVertical className="w-4 h-4" />
-                                </div>
-                                {item.icon}
-                                <div className="flex-1 ml-3">
-                                  <h3 className="font-medium text-white">
-                                    {item.title}
-                                  </h3>
-                                  {currentComponent?.id === item.id && (
-                                    <span className="text-xs text-blue-200">
-                                      Currently Active
-                                    </span>
-                                  )}
-                                </div>
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    const finalLink =
-                                      typeof item.getLink === "function"
-                                        ? item.getLink(roomId ?? "")
-                                        : item.getLink;
-                                    navigate(finalLink);
-                                  }}
-                                  className="ml-2"
-                                >
-                                  <ExternalLink className="w-4 h-4" />
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleDeleteComponent(item.id);
-                                  }}
-                                  className="ml-2"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </Button>
-                              </div>
-                            </Card>
-                          )}
-                        </Draggable>
-                      ))}
-                      {provided.placeholder}
-                    </div>
-                  )}
-                </Droppable>
-              </ScrollArea>
-            </div>
-            {/* Chat Component */}
-            <div className="h-[50%] p-2 border-t border-gray-700">
-              <Card className="h-[calc(100%)] overflow-y-auto bg-gray-700 text-white">
-                <LiveChat />
-              </Card>
-            </div>
-          </div>
+          <HostSidebar
+            roomId={roomId}
+            navigate={navigate}
+            currentComponent={{ id: currentComponent?.id }}
+            components={components}
+            isAddDialogOpen={isAddDialogOpen}
+            setIsAddDialogOpen={setIsAddDialogOpen}
+            handleComponentClick={handleComponentClick}
+            handleAddComponent={handleAddComponent}
+            handleDeleteComponent={handleDeleteComponent}
+          ></HostSidebar>
         </div>
       </DragDropContext>
     </div>
