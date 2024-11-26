@@ -60,6 +60,13 @@ export const Poll: PollResponse = {
       imageUrl: "Mac.jpg",
       voteCount: 0,
     },
+    {
+      pollOptionId: 4,
+      value: "Nova",
+      description: "",
+      imageUrl: "Nova.png",
+      voteCount: 0,
+    }
   ],
   voted: false,
   selectedPollOption: null,

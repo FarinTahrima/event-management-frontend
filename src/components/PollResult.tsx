@@ -43,15 +43,15 @@ const PollOptionCard: React.FC<{ pollOption: PollOptionResponse; totalVotes: num
           />
         </div>
       }
-      <div className="p-4 flex-grow flex flex-col justify-between relative z-10">
+      <div className="p-2 flex-grow flex flex-col justify-between relative z-10">
         <div>
-          <h3 className={"font-semibold mb-2 text-white text-xl flex items-center"}>
+          <p className={"font-semibold text-white text-m flex items-center"}>
             <span>{pollOption.value}</span>
-          </h3>
+          </p>
           {pollOption.description &&
           <p
             ref={descriptionRef}
-            className={`text-gray-400 mb-2 text-base ${expanded ? '' : 'line-clamp-2'}`}
+            className={`text-gray-400 text-base ${expanded ? '' : 'line-clamp-2'}`}
           >
             {pollOption.description}
           </p>
@@ -76,7 +76,7 @@ const PollOptionCard: React.FC<{ pollOption: PollOptionResponse; totalVotes: num
           )}
         </div>
         <div>
-          <div className="mt-2 flex justify-between items-center">
+          <div className="flex justify-between items-center">
             <span className={"font-medium text-gray-300 text-sm"}>{pollOption.voteCount} votes</span>
             <span className={"font-medium text-gray-300 text-sm"}>{votePercentage.toFixed(1)}%</span>
           </div>
@@ -106,15 +106,14 @@ const PollResult: React.FC<PollResultProps> = ({ poll, isHost, changeToResult, c
  }
 
   return (
-    <div className="text-white justify-center w-full max-w-6xl mx-auto p-6">
-        <h1 className="text-3xl md:text-4xl font-bold mb-2">Poll Result</h1>
-        <h2 className="text-xl md:text-2xl font-semibold mb-2">{poll?.pollQuestion}</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+    <div className="text-white justify-center w-full max-w-6xl mx-auto p-4">
+        <p className="text-l md:text-l font-bold mb-2">{poll?.pollQuestion}</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 mb-2">
             {sortedOptions.map((option, index) => (
             <PollOptionCard key={index} pollOption={option} totalVotes={totalVotes} place={index + 1} />
             ))}
         </div>
-        <div className="space-y-4">
+        <div className="space-y-1">
           {isHost && (
             <Button
                 type="button"

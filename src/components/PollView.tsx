@@ -31,26 +31,24 @@ export const PollView : React.FC<PollViewProps> = ({ poll, isHost, onVoteSubmit,
     
     return (
         <div className="text-white justify-center w-full max-w-6xl mx-auto p-6">
-            <form className="space-y-4 text-white">
-                <div>
+            <form className="space-y-1 space-x-12 text-white">
                     {/* RETRIEVE POLL QUESTION AND ITS OPTIONS */}
-                    <h1 className="text-3xl md:text-4xl font-bold mb-2">{poll?.pollQuestion}</h1>
-                    <h2 className="text-xl md:text-2xl font-semibold mb-2">*Select the option you want to vote for and click "Submit Vote"</h2>
+                    <p className="text-l md:text-l font-bold mb-2">{poll?.pollQuestion}</p>
+                  
                     <RadioGroup 
                         onValueChange={() => optionChecked && setOptionChecked(optionChecked)}
                     >
-                        <div className="flex items-center space-x-2 justify-center">
-                        {poll?.pollOptionList.map((option, id) => 
-                            <PollOptionView
-                                key={id}
-                                pollOptionView={option}
-                                optionChecked={optionChecked}
-                                setOptionChecked={setOptionChecked}
-                            />
-                        )}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 mb-2">
+                            {poll?.pollOptionList.map((option, id) => 
+                                <PollOptionView
+                                    key={id}
+                                    pollOptionView={option}
+                                    optionChecked={optionChecked}
+                                    setOptionChecked={setOptionChecked}
+                                />
+                            )}
                         </div>
                     </RadioGroup>
-                </div>
                 {/* CREATE VOTE BUTTON - ONLY FOR VIEWERS TO VOTE */}
                 {!isHost &&
                     <Button
@@ -66,7 +64,7 @@ export const PollView : React.FC<PollViewProps> = ({ poll, isHost, onVoteSubmit,
                 
                 {/* VIEW POLL RESULT BUTTON - ONLY FOR HOST TO VIEW RESULT OF ONGOING POLL */}
                 {isHost &&
-                    <div className="space-y-4">
+                    <div className="space-y-1">
                         <Button
                             type="button"
                             variant="default"
@@ -79,7 +77,7 @@ export const PollView : React.FC<PollViewProps> = ({ poll, isHost, onVoteSubmit,
                 }
             </form>
             {voted && !isHost && (
-                <div className="mt-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded">
+                <div className="mt-2 p-2 bg-green-100 border border-green-400 text-green-700 rounded">
                 <p>Thank you for voting!</p>
                 </div>
             )}
@@ -117,8 +115,7 @@ export const PollOptionView = ({
       }
     
     return (
-        <div 
-            style={{width: 250}}
+        <div
             className={`${optionChecked?.value == pollOptionView.value ? 'bg-green-500' : 'bg-gray-800'} rounded-lg shadow-lg overflow-hidden flex flex-col h-full border border-gray-700`}
             onClick={() => setOptionChecked(pollOptionView)}
         >
@@ -128,7 +125,7 @@ export const PollOptionView = ({
                 id={"Option-" + pollOptionView.pollOptionId}
                 hidden
             />
-            <div className="p-4 flex-grow flex flex-col justify-between relative z-10 gap-6">
+            <div>
                 {/* OPTION IMAGE */}
                 {image && 
                     <div className="relative pt-[100%]">
@@ -140,7 +137,7 @@ export const PollOptionView = ({
                         />
                     </div>
                 }
-                <div className="x-4 flex flex-col justify-between relative z-10">
+                <div className="p-4 flex flex-col justify-between relative z-10">
                     {/* OPTION VALUE */}
                     <h3 className={"font-semibold mb-2 text-white text-lg flex items-center"}>
                         <span>{pollOptionView.value}</span>
