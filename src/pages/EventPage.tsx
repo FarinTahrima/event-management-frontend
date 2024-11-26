@@ -25,7 +25,7 @@ import {
   sendModuleAction,
   sendStreamStatus,
   StreamConnection,
-  StreamStatus
+  StreamStatus,
 } from "@/utils/messaging-client";
 import { useAppContext } from "@/contexts/AppContext";
 import VideoJSSynced from "@/components/VideoJSSynced";
@@ -228,7 +228,7 @@ const EventPage: React.FC = () => {
                       </h2>
                       {currentComponent.type === "slide" &&
                         currentComponent.images && (
-                          <div className="w-full h-full">
+                          <div className="w-full h-full ">
                             <SlideShow
                               images={currentComponent.images}
                               isHost={true}
@@ -267,16 +267,10 @@ const EventPage: React.FC = () => {
                         </div>
                       )}
                       {currentComponent.type === "poll" && roomId && (
-                        <PollComponent
-                          isHost={true}
-                          roomId={roomId}
-                        />
+                        <PollComponent isHost={true} roomId={roomId} />
                       )}
                       {currentComponent.type === "whiteboard" && roomId && (
-                        <Whiteboard
-                          isHost
-                          roomId={roomId}
-                        />
+                        <Whiteboard isHost roomId={roomId} />
                       )}
                       {currentComponent.type === "interactive-qa" && roomId && (
                         <InteractiveQAComponent roomId={roomId} isHost />
@@ -385,18 +379,19 @@ const EventPage: React.FC = () => {
                                   )}
                                 </div>
                                 <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        const finalLink = typeof item.getLink === 'function' 
-                                            ? item.getLink(roomId ?? "") 
-                                            : item.getLink;
-                                        navigate(finalLink);
-                                    }}
-                                    className="ml-2"
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    const finalLink =
+                                      typeof item.getLink === "function"
+                                        ? item.getLink(roomId ?? "")
+                                        : item.getLink;
+                                    navigate(finalLink);
+                                  }}
+                                  className="ml-2"
                                 >
-                                    <ExternalLink className="w-4 h-4" />
+                                  <ExternalLink className="w-4 h-4" />
                                 </Button>
                                 <Button
                                   size="sm"
