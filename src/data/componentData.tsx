@@ -68,9 +68,9 @@ export const Components: ComponentItem[] = [
     icon: <Image className="w-6 h-6" />,
     content: "Welcome to the presentation!",
     images: [
-      "https://picsum.photos/id/0/800/400",
-      "https://picsum.photos/id/1/800/400",
-      "https://picsum.photos/id/2/800/400",
+      "../slides/novabook1.png",
+      "../slides/novabook2.png",
+      "../slides/novabook3.png",
     ],
     currentImageIndex: 0,
     getLink: "/slide",
