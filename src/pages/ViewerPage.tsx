@@ -180,7 +180,7 @@ const ViewerPage: React.FC = () => {
       <div className="flex flex-1 overflow-hidden">
         {/* Main Stage */}
         <div className="flex-[3] p-6 h-full overflow-hidden">
-          <Card className="h-full flex items-center justify-center bg-gray-800 scale-100">
+          <Card className="h-full flex items-center justify-center bg-gray-800">
             {currentComponent ? (
               <div className="text-center p-2 w-full h-full flex flex-col place-content-center">
                 {currentComponent.imageUrl &&
