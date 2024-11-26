@@ -54,7 +54,7 @@ export const Poll: PollResponse = {
       description: "",
       imageUrl: "Mac.jpg",
       voteCount: 0,
-    }
+    },
   ],
   voted: false,
   selectedPollOption: null,
@@ -109,15 +109,6 @@ export const Components: ComponentItem[] = [
     getLink: (roomId: string) => `/model/${roomId}`,
     htmlContent: <ViewOnlyModelViewer />,
   },
-  // {
-  //   id: "6",
-  //   type: "pigeon-hole",
-  //   title: "Pigeon Hole",
-  //   icon: <Bird className="w-6 h-6" />,
-  //   content: "Interactive Q&A",
-  //   getLink: "/pigeon",
-  //   htmlContent: null,
-  // },
   {
     id: "6",
     type: "interactive-qa",
