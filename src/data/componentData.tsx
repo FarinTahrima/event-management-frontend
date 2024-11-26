@@ -81,6 +81,11 @@ export const Components: ComponentItem[] = [
         caption: "NovaBook has unmatched speed and efficiency",
       },
       { imageUrl: "../slides/novabook3.png", caption: "Immersive Graphics" },
+      {
+        imageUrl: "../slides/novabook4.png",
+        caption:
+          "Long Lasting Battery with Fast Wireless Charging powered by Qi 2.0",
+      },
     ],
     currentImageIndex: 0,
     getLink: "/slide",
