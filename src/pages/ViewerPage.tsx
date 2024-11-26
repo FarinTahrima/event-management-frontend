@@ -8,7 +8,7 @@ import {
   ModuleAction,
   ModuleConnection,
   StreamConnection,
-  StreamStatus
+  StreamStatus,
 } from "@/utils/messaging-client";
 import { useParams } from "react-router-dom";
 import { ComponentItem, Components, videoSource } from "../data/componentData";
@@ -69,17 +69,13 @@ const ViewerPage: React.FC = () => {
   useEffect(() => {
     const fetchStatusAndConnect = async () => {
       try {
-        
         // Only fetch and set initial module if stream is live
         if (streamStatus.isLive) {
           const currentModule: ModuleAction = await getCurrentModule(roomID);
           const component = Components.find(
             (component) => component.id === currentModule.ID
           );
-          console.log(
-            "currentModule: ",
-            currentModule
-          );
+          console.log("currentModule: ", currentModule);
           if (component) {
             setCurrentComponent({
               ...component,
@@ -224,20 +220,16 @@ const ViewerPage: React.FC = () => {
                   />
                 )}
                 {currentComponent.type === "poll" && roomId && (
-                  <PollComponent
-                    isHost={false}
-                    roomId={roomId}
-                  />
+                  <PollComponent isHost={false} roomId={roomId} />
                 )}
                 {currentComponent.type === "whiteboard" && roomId && (
                   <Whiteboard isHost={false} roomId={roomId} />
                 )}
-                {currentComponent.type === "interactive-qa" &&
-                  roomId && (
-                    <div className="h-55">
-                      <SelectedQuestionDisplay isHost={false} />
-                    </div>
-                  )}
+                {currentComponent.type === "interactive-qa" && roomId && (
+                  <div className="h-55">
+                    <SelectedQuestionDisplay isHost={false} />
+                  </div>
+                )}
               </div>
             ) : (
               <p className="text-gray-400">
@@ -282,7 +274,10 @@ const ViewerPage: React.FC = () => {
 
           {/* Questions Section - Fixed height */}
           <div className="min-h-[26rem] border-y border-gray-700">
-            <ViewerSideQuestionComponent isLive={streamStatus.isLive} roomId={roomID}/>
+            <ViewerSideQuestionComponent
+              isLive={streamStatus.isLive}
+              roomId={roomID}
+            />
           </div>
 
           {/* Live Chat Section - Takes remaining space */}
