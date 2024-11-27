@@ -74,9 +74,26 @@ export const Poll: PollResponse = {
 
 export const Components: ComponentItem[] = [
   {
+    id: "2",
+    type: "video",
+    title: "Product Video",
+    icon: <FileVideo className="w-6 h-6" />,
+    getLink: (roomId: string) => `/record/${roomId}`,
+    htmlContent: null,
+  },
+  {
+    id: "3",
+    type: "live-webcam",
+    title: "Live Webcam",
+    icon: <Radio className="w-6 h-6" />,
+    content: "See it Live",
+    getLink: "/live",
+    htmlContent: <VideoRecorder viewOnly />,
+  },
+  {
     id: "1",
     type: "slide",
-    title: "Slide Presentation",
+    title: "Product Slides",
     icon: <Image className="w-6 h-6" />,
     images: [
       {
@@ -98,32 +115,6 @@ export const Components: ComponentItem[] = [
     getLink: "/slide",
   },
   {
-    id: "2",
-    type: "video",
-    title: "Demo Video",
-    icon: <FileVideo className="w-6 h-6" />,
-    getLink: (roomId: string) => `/record/${roomId}`,
-    htmlContent: null,
-  },
-  {
-    id: "3",
-    type: "live-webcam",
-    title: "Live Webcam",
-    icon: <Radio className="w-6 h-6" />,
-    content: "See it Live",
-    getLink: "/live",
-    htmlContent: <VideoRecorder viewOnly />,
-  },
-  {
-    id: "4",
-    type: "poll",
-    title: "Poll",
-    icon: <BarChart2 className="w-6 h-6" />,
-    content: "Create an interactive poll",
-    getLink: (roomId: string) => `/poll/${roomId}`,
-    htmlContent: null,
-  },
-  {
     id: "5",
     type: "model",
     title: "3D Model",
@@ -138,6 +129,15 @@ export const Components: ComponentItem[] = [
     icon: <MessageCircleQuestion className="w-6 h-6" />,
     content: "Interactive Q&A",
     getLink: "/interactive-qa",
+    htmlContent: null,
+  },
+  {
+    id: "4",
+    type: "poll",
+    title: "Poll",
+    icon: <BarChart2 className="w-6 h-6" />,
+    content: "Create an interactive poll",
+    getLink: (roomId: string) => `/poll/${roomId}`,
     htmlContent: null,
   },
   {
