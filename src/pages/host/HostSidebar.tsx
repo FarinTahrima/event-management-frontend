@@ -76,7 +76,7 @@ const HostSidebar = (props: {
                           </div>
                           {item.icon}
                           <div className="flex-1 ml-4">
-                            <h3 className="font-medium text-white text-2xl">
+                            <h3 className="font-medium text-white text-xl">
                               {item.title}
                             </h3>
                             {props.currentComponent?.id === item.id && (
