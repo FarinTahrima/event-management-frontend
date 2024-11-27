@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { DragDropContext, Droppable } from "react-beautiful-dnd";
-import { Card } from "@/components/shadcn/ui/card";
+import { DragDropContext } from "react-beautiful-dnd";
 import { Button } from "@/components/shadcn/ui/button";
 import { ArrowLeft } from "lucide-react";
 import LiveIndicator from "./components/LiveIndicator";
@@ -11,131 +10,27 @@ import {
   sendModuleAction,
   sendStreamStatus,
   StreamConnection,
-  StreamStatus,
 } from "@/utils/messaging-client";
+import { streamStorage, StreamStatus } from "@/utils/streamStorage";
 import { useAppContext } from "@/contexts/AppContext";
-import VideoJSSynced from "@/components/VideoJSSynced";
-import {
-  Components,
-  ComponentItem,
-  videoSource,
-  SlideItem,
-} from "@/data/componentData";
-import PollComponent from "./components/PollComponent";
-import SlideShow from "./components/SlideShow";
-import Whiteboard from "./components/Whiteboard";
-import InteractiveQAComponent from "./components/InteractiveQA";
+import { Components, ComponentItem } from "@/data/componentData";
 import HostSidebar from "./host/HostSidebar";
-import { PollResponse } from "./host/HostCreatePoll";
 import HostMainStage from "./host/HostMainStage";
-
-const videoJSOptions = {
-  sources: [
-    {
-      // src: data.videoSource,
-      src: videoSource,
-      type: "application/x-mpegURL",
-    },
-  ],
-};
-
-// const HostMainStage = (props: HostMainStageProps) => {
-//   return (
-//     <div className="flex-[3] p-6 h-full overflow-hidden">
-//       <Droppable droppableId="main-stage">
-//         {(provided, snapshot) => (
-//           <Card
-//             ref={provided.innerRef}
-//             {...provided.droppableProps}
-//             className={`h-full flex flex-col items-center justify-center bg-gray-800 transition-colors ${snapshot.isDraggingOver ? "border-2 border-blue-500" : ""}`}
-//           >
-//             {props.currentComponent ? (
-//               <div className="text-center p-2 w-full h-full flex flex-col place-content-center">
-//                 <h2 className="text-xl font-semibold mb-4 text-white">
-//                   {props.currentComponent.title}
-//                 </h2>
-//                 {props.currentComponent.type === "slide" &&
-//                   props.currentComponent.images && (
-//                     <div className="w-full h-full ">
-//                       <SlideShow
-//                         images={props.currentComponent.images}
-//                         isHost={true}
-//                         currentIndex={props.currentSlideIndex}
-//                         onSlideChange={(index) => {
-//                           props.setCurrentSlideIndex(index);
-//                           sendModuleAction({
-//                             ID: props.currentComponent?.id ?? "",
-//                             TYPE: "slide_change",
-//                             SESSION_ID: props.roomId ?? "",
-//                             SENDER: props.user?.username ?? "",
-//                             TIMESTAMP: new Date().toISOString(),
-//                             CONTENT: JSON.stringify({
-//                               slideIndex: index,
-//                             }),
-//                             IS_LIVE: props.isLive,
-//                           });
-//                         }}
-//                       />
-//                     </div>
-//                   )}
-//                 {props.currentComponent.htmlContent &&
-//                   !props.currentComponent.imageUrl && (
-//                     <div className="max-w-full max-h-full overflow-auto">
-//                       {props.currentComponent.htmlContent}
-//                     </div>
-//                   )}
-//                 {props.currentComponent.type === "video" && (
-//                   <div className="flex justify-center items-center w-full h-full">
-//                     <VideoJSSynced
-//                       options={videoJSOptions}
-//                       roomID={props.roomId ?? ""}
-//                       isHost={true}
-//                       className="w-full h-full max-w-[80%] max-h-[80%] flex justify-center items-center"
-//                     />
-//                   </div>
-//                 )}
-//                 {props.currentComponent.type === "poll" && props.roomId && (
-//                   <PollComponent isHost={true} roomId={props.roomId} />
-//                 )}
-//                 {props.currentComponent.type === "whiteboard" &&
-//                   props.roomId && <Whiteboard isHost roomId={props.roomId} />}
-//                 {props.currentComponent.type === "interactive-qa" &&
-//                   props.roomId && (
-//                     <InteractiveQAComponent roomId={props.roomId} isHost />
-//                   )}
-//                 {props.currentComponent.content && (
-//                   <p className="text-white mb-4">
-//                     {props.currentComponent.content}
-//                   </p>
-//                 )}
-//               </div>
-//             ) : (
-//               <div
-//                 className={`text-gray-400 text-center ${snapshot.isDraggingOver ? "text-blue-400" : ""}`}
-//               >
-//                 {snapshot.isDraggingOver
-//                   ? "Drop component here"
-//                   : "Drag a component here or select from the sidebar"}
-//               </div>
-//             )}
-//             {provided.placeholder}
-//           </Card>
-//         )}
-//       </Droppable>
-//     </div>
-//   );
-// };
 
 const EventPage: React.FC = () => {
   const { roomId } = useParams<{ roomId: string }>();
   const navigate = useNavigate();
-  const [currentComponent, setCurrentComponent] =
-    useState<ComponentItem | null>(null);
+  const [currentComponent, setCurrentComponent] = useState<ComponentItem | null>(null);
   const [components, setComponents] = useState<ComponentItem[]>(Components);
-  const [streamStatus, setStreamStatus] = useState<StreamStatus>({
-    isLive: false,
-    viewerCount: 0,
-    sessionId: roomId,
+  const [streamStatus, setStreamStatus] = useState<StreamStatus>(() => {
+    // Initialize from localStorage, but update sessionId
+    const stored = streamStorage.getStreamStatus();
+    const initialStatus = {
+      ...stored,
+      sessionId: roomId
+    };
+    streamStorage.setStreamStatus(initialStatus);
+    return initialStatus;
   });
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const { user } = useAppContext();
@@ -154,7 +49,8 @@ const EventPage: React.FC = () => {
         }
       },
       goLive: (isLive: boolean) => {
-        setStreamStatus((prev) => ({ ...prev, isLive }));
+        const newStatus = streamStorage.updateStreamStatus({ isLive });
+        setStreamStatus(newStatus);
       },
     });
     return cleanupWebSocket;
@@ -165,20 +61,19 @@ const EventPage: React.FC = () => {
       roomID: roomId ?? "",
       onReceived: (status) => {
         console.log("Received StatusMessage:", status);
-        if (status.TYPE === "VIEWER_JOIN") {
-          setStreamStatus((prev) => ({
-            ...prev,
-            viewerCount: status.VIEWER_COUNT || 0,
-          }));
-        } else if (status.TYPE === "VIEWER_LEAVE") {
-          setStreamStatus((prev) => ({
-            ...prev,
-            viewerCount: status.VIEWER_COUNT || 0,
-          }));
+        let updates: Partial<StreamStatus> = {};
+        
+        if (status.TYPE === "VIEWER_JOIN" || status.TYPE === "VIEWER_LEAVE") {
+          updates.viewerCount = status.VIEWER_COUNT || 0;
         } else if (status.TYPE === "START_STREAM") {
-          setStreamStatus((prev) => ({ ...prev, isLive: true }));
+          updates.isLive = true;
         } else if (status.TYPE === "STOP_STREAM") {
-          setStreamStatus((prev) => ({ ...prev, isLive: false }));
+          updates.isLive = false;
+        }
+
+        if (Object.keys(updates).length > 0) {
+          const newStatus = streamStorage.updateStreamStatus(updates);
+          setStreamStatus(newStatus);
         }
       },
     });
@@ -187,7 +82,11 @@ const EventPage: React.FC = () => {
 
   const handleGoLive = () => {
     const newStatus = !streamStatus.isLive;
-    setStreamStatus((prev) => ({ ...prev, isLive: newStatus }));
+    const updatedStatus = streamStorage.updateStreamStatus({ 
+      isLive: newStatus 
+    });
+    setStreamStatus(updatedStatus);
+    
     sendStreamStatus({
       TYPE: newStatus ? "START_STREAM" : "STOP_STREAM",
       SESSION_ID: roomId,

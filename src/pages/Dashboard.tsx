@@ -2,14 +2,29 @@ import { useEffect, useState, useRef, useMemo } from 'react';
 import {LineChart,Line,XAxis,YAxis,CartesianGrid,Tooltip,Legend,ResponsiveContainer} from 'recharts';
 import { SentimentHistoryItem } from '../types/types';
 import { useNavigate } from 'react-router-dom';
+import { StreamStatus, streamStorage } from '@/utils/streamStorage';
 
 const SentimentDashboard: React.FC = () => {
   const [sentimentHistory, setSentimentHistory] = useState<SentimentHistoryItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshInterval, setRefreshInterval] = useState<number>(30000);
+  const [streamStatus, setStreamStatus] = useState<StreamStatus>(() => 
+    streamStorage.getStreamStatus()
+  );
   const navigate = useNavigate();
   const controllerRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'streamStatus' && e.newValue) {
+        setStreamStatus(JSON.parse(e.newValue));
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 
   // Helper function to normalize messages
   const normalizeMessage = (message: string): string => {
