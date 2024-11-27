@@ -88,11 +88,11 @@ const HostMainStage = (props: HostMainStageProps) => {
                   props.roomId && (
                     <InteractiveQAComponent roomId={props.roomId} isHost />
                   )}
-                {props.currentComponent.content && (
+                {/* {props.currentComponent.content && (
                   <p className="text-white mb-4">
                     {props.currentComponent.content}
                   </p>
-                )}
+                )} */}
               </div>
             ) : (
               <div

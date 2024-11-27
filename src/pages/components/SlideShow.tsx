@@ -38,11 +38,11 @@ const SlideShow: React.FC<SlideShowProps> = ({
           alt={`Slide ${currentIndex + 1}`}
           className="max-w-full max-h-full object-contain"
         />
-        {isHost && (
+        {/* {isHost && (
           <p className="text-white mt-4 font-semibold">
             {images[currentIndex].caption}
           </p>
-        )}
+        )} */}
       </div>
 
       {/* Slideshow controls - host only */}
