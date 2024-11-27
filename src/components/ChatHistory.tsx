@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { Message } from '../types/types';
+import { Message } from "../types/types";
 import { ScrollArea } from "./shadcn/ui/scroll-area";
 
 interface ChatHistoryProps {
@@ -15,7 +15,7 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({ chatMessages }) => {
         {chatMessages.map((msg: Message) => (
           <p
             key={msg.messageID}
-            className="my-2 text-[#A8A8A8] text-wrap text-start"
+            className="my-2 text-[#A8A8A8] text-wrap text-start text-xl"
           >
             <strong>{msg.sender}</strong>: {msg.content}
           </p>
