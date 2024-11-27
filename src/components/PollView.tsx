@@ -54,7 +54,7 @@ export const PollView : React.FC<PollViewProps> = ({ poll, isHost, onVoteSubmit,
                     <Button
                         type="button"
                         variant="secondary"
-                        className="w-1/2 py-2 font-alatsi"
+                        className="w-1/2 py-2 font-alatsi text-lg"
                         disabled={optionChecked == null || voted}
                         onClick={selectOption}
                     >
@@ -68,7 +68,7 @@ export const PollView : React.FC<PollViewProps> = ({ poll, isHost, onVoteSubmit,
                         <Button
                             type="button"
                             variant="default"
-                            className="w-1/2 text-white py-2 font-alatsi border"
+                            className="w-1/2 text-white py-2 text-lg font-alatsi border"
                             onClick={onClickViewResult}
                             >
                             View Poll Result
