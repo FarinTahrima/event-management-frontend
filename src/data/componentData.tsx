@@ -84,7 +84,7 @@ export const Components: ComponentItem[] = [
   {
     id: "2",
     type: "video",
-    title: "Product Video",
+    title: "Video",
     icon: <FileVideo className="w-6 h-6" />,
     getLink: (roomId: string) => `/record/${roomId}`,
     htmlContent: null,
@@ -92,7 +92,7 @@ export const Components: ComponentItem[] = [
   {
     id: "1",
     type: "slide",
-    title: "Product Slides",
+    title: "Slideshow",
     icon: <Image className="w-6 h-6" />,
     images: [
       {
