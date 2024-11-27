@@ -39,9 +39,6 @@ const HostMainStage = (props: HostMainStageProps) => {
           >
             {props.currentComponent ? (
               <div className="text-center p-2 w-full h-full flex flex-col place-content-center">
-                <h2 className="text-xl font-semibold mb-4 text-white">
-                  {props.currentComponent.title}
-                </h2>
                 {props.currentComponent.type === "slide" &&
                   props.currentComponent.images && (
                     <div className="w-full h-full ">
