@@ -20,14 +20,15 @@ import HostMainStage from "./host/HostMainStage";
 const EventPage: React.FC = () => {
   const { roomId } = useParams<{ roomId: string }>();
   const navigate = useNavigate();
-  const [currentComponent, setCurrentComponent] = useState<ComponentItem | null>(null);
+  const [currentComponent, setCurrentComponent] =
+    useState<ComponentItem | null>(null);
   const [components, setComponents] = useState<ComponentItem[]>(Components);
   const [streamStatus, setStreamStatus] = useState<StreamStatus>(() => {
     // Initialize from localStorage, but update sessionId
     const stored = streamStorage.getStreamStatus();
     const initialStatus = {
       ...stored,
-      sessionId: roomId
+      sessionId: roomId,
     };
     streamStorage.setStreamStatus(initialStatus);
     return initialStatus;
@@ -62,7 +63,7 @@ const EventPage: React.FC = () => {
       onReceived: (status) => {
         console.log("Received StatusMessage:", status);
         let updates: Partial<StreamStatus> = {};
-        
+
         if (status.TYPE === "VIEWER_JOIN" || status.TYPE === "VIEWER_LEAVE") {
           updates.viewerCount = status.VIEWER_COUNT || 0;
         } else if (status.TYPE === "START_STREAM") {
@@ -82,15 +83,23 @@ const EventPage: React.FC = () => {
 
   const handleGoLive = () => {
     const newStatus = !streamStatus.isLive;
-    const updatedStatus = streamStorage.updateStreamStatus({ 
-      isLive: newStatus 
+    const updatedStatus = streamStorage.updateStreamStatus({
+      isLive: newStatus,
     });
     setStreamStatus(updatedStatus);
-    
+
     sendStreamStatus({
       TYPE: newStatus ? "START_STREAM" : "STOP_STREAM",
       SESSION_ID: roomId,
       IS_LIVE: newStatus,
+    });
+    sendModuleAction({
+      ID: currentComponent?.id ?? "",
+      TYPE: currentComponent?.type ?? "",
+      SESSION_ID: roomId ?? "",
+      SENDER: user?.username ?? "",
+      TIMESTAMP: new Date().toISOString(),
+      IS_LIVE: streamStatus.isLive,
     });
   };
 
