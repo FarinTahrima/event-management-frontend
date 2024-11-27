@@ -9,6 +9,7 @@ import ModelManager from './ModelViewer/ModelManager';
 import { ModelConfig } from '@/types/components';
 import { useState, useEffect, Suspense } from 'react';
 import { useParams , useNavigate } from 'react-router-dom';
+import { StreamStatus, streamStorage } from '@/utils/streamStorage';
 
 function Model({ url, scale = 1 }: { url: string; scale?: number }) {
   const { scene } = useGLTF(url);
@@ -25,6 +26,20 @@ const ModelViewer = () => {
   const [lightIntensity, setLightIntensity] = useState(0.5);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [modelData, setModelData] = useState<string>('');
+  const [streamStatus, setStreamStatus] = useState<StreamStatus>(() => 
+    streamStorage.getStreamStatus()
+  );
+
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'streamStatus' && e.newValue) {
+        setStreamStatus(JSON.parse(e.newValue));
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 
   const handleBack = () => {
     navigate(`/event/${roomId}`);
