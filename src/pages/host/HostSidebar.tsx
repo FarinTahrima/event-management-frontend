@@ -1,12 +1,7 @@
 import LiveChat from "@/components/LiveChat";
 import { Button } from "@/components/shadcn/ui/button";
 import { Card } from "@/components/shadcn/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/shadcn/ui/dialog";
+import {Dialog, DialogContent, DialogHeader, DialogTitle} from "@/components/shadcn/ui/dialog";
 import { Draggable, Droppable } from "@/components/shadcn/ui/dnd";
 import { ScrollArea } from "@/components/shadcn/ui/scroll-area";
 import { ComponentItem, Components } from "@/data/componentData";
@@ -27,7 +22,7 @@ const HostSidebar = (props: {
     <div className="flex-1 bg-gray-800 shadow-lg flex flex-col">
       <div className="h-[50%] p-2 overflow-hidden">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold">Modules</h2>
+          <h2 className="text-2xl font-semibold">Modules</h2>
           <Button onClick={() => props.setIsAddDialogOpen(true)} size="sm">
             <Plus className="w-4 h-4 mr-2" />
             Add
@@ -80,8 +75,8 @@ const HostSidebar = (props: {
                             <GripVertical className="w-4 h-4" />
                           </div>
                           {item.icon}
-                          <div className="flex-1 ml-3">
-                            <h3 className="font-medium text-white">
+                          <div className="flex-1 ml-4">
+                            <h3 className="font-medium text-white text-xl">
                               {item.title}
                             </h3>
                             {props.currentComponent?.id === item.id && (

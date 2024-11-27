@@ -100,7 +100,7 @@ const LiveChat = () => {
       <div className="flex flex-row flex-wrap justify-between p-2 pt-4 border border-0 border-b-2">
         <div className="flex items-center gap-2">
           <MessageSquare className="w-5 h-5 text-stone-50" />
-          <h2 className="font-alatsi text-stone-50 text-lg">Live Chat</h2>
+          <h2 className="font-alatsi text-stone-50 text-xl">Live Chat</h2>
         </div>
       </div>
 

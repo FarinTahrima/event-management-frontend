@@ -96,7 +96,7 @@ const HostMainStage = (props: HostMainStageProps) => {
               </div>
             ) : (
               <div
-                className={`text-gray-400 text-center ${snapshot.isDraggingOver ? "text-blue-400" : ""}`}
+                className={`text-gray-400 text-xl text-center ${snapshot.isDraggingOver ? "text-blue-400" : ""}`}
               >
                 {snapshot.isDraggingOver
                   ? "Drop component here"
