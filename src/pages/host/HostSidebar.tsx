@@ -37,7 +37,7 @@ const HostSidebar = (props: {
             onClose={() => props.setIsAddDialogOpen(false)}
           >
             <DialogHeader>
-              <DialogTitle>Add New Component</DialogTitle>
+              <DialogTitle>Add New Module</DialogTitle>
             </DialogHeader>
             <DialogContent>
               <div className="grid gap-4 py-4">

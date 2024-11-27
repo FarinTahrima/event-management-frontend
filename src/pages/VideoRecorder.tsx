@@ -7,6 +7,7 @@ import { Button } from "@/components/shadcn/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/shadcn/ui/select";
 import * as faceapi from 'face-api.js';
 import { useNavigate, useParams } from 'react-router-dom';
+import { StreamStatus, streamStorage } from '@/utils/streamStorage';
 
 interface VideoRecorderProps {
   viewOnly: boolean
@@ -25,6 +26,7 @@ const VideoRecorder: React.FC<VideoRecorderProps> = ({viewOnly}: VideoRecorderPr
   const [detectionInterval] = useState(500);
   const { roomId } = useParams();
   const navigate = useNavigate();
+  const [streamStatus, setStreamStatus] = useState<StreamStatus>(() => streamStorage.getStreamStatus());
   const { status, startRecording, stopRecording } = useReactMediaRecorder({
     video: true,
     audio: true,
@@ -33,6 +35,17 @@ const VideoRecorder: React.FC<VideoRecorderProps> = ({viewOnly}: VideoRecorderPr
       setRecordingDuration(0);
     },
   });
+
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'streamStatus' && e.newValue) {
+        setStreamStatus(JSON.parse(e.newValue));
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 
   const isProcessing = useRef(false);
   const handleBack = () => {

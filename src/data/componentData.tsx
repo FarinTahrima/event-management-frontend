@@ -5,7 +5,6 @@ import {
   Radio,
   BarChart2,
   Box,
-  Bird,
   Presentation,
   MessageCircleQuestion,
 } from "lucide-react";
@@ -74,14 +73,6 @@ export const Poll: PollResponse = {
 
 export const Components: ComponentItem[] = [
   {
-    id: "2",
-    type: "video",
-    title: "Product Video",
-    icon: <FileVideo className="w-6 h-6" />,
-    getLink: (roomId: string) => `/record/${roomId}`,
-    htmlContent: null,
-  },
-  {
     id: "3",
     type: "live-webcam",
     title: "Live Webcam",
@@ -89,6 +80,14 @@ export const Components: ComponentItem[] = [
     content: "See it Live",
     getLink: "/live",
     htmlContent: <VideoRecorder viewOnly />,
+  },
+  {
+    id: "2",
+    type: "video",
+    title: "Product Video",
+    icon: <FileVideo className="w-6 h-6" />,
+    getLink: (roomId: string) => `/record/${roomId}`,
+    htmlContent: null,
   },
   {
     id: "1",
