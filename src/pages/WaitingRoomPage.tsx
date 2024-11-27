@@ -19,6 +19,7 @@ import Tetris from "../components/game/Tetris";
 import Game2048 from "../components/game/2048";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/shadcn/ui/button";
+import Connections from "../components/game/Connections/Connections";
 
 type RoomDetails = {
   id: number;
@@ -134,10 +135,10 @@ const WaitingRoomPage: React.FC = () => {
                 <Grid3X3 className="mr-2" /> Battleship
               </TabsTrigger>
               <TabsTrigger
-                value="checkers"
+                value="connections"
                 className="text-lg flex items-center justify-center"
               >
-                <Gamepad2 className="mr-2" /> Checkers
+                <Gamepad2 className="mr-2" /> Connections
               </TabsTrigger>
               <TabsTrigger
                 value="tetris"
@@ -168,16 +169,16 @@ const WaitingRoomPage: React.FC = () => {
                 </Card>
               </TabsContent>
 
-              <TabsContent value="checkers">
+              <TabsContent value="connections">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Checkers</CardTitle>
+                    <CardTitle>Connections</CardTitle>
                     <CardDescription>
-                      Strategic board game for two players.
+                      Create four groups of four
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <Checkers />
+                    <Connections />
                   </CardContent>
                 </Card>
               </TabsContent>
