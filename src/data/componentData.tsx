@@ -36,34 +36,34 @@ export const videoSource = "http://localhost:8080/encoded/laptop/master.m3u8";
 
 export const Poll: PollResponse = {
   pollId: 1,
-  pollQuestion: "Which laptop do you use?",
+  pollQuestion: "Which feature you liked the most?",
   pollOptionList: [
     {
       pollOptionId: 1,
-      value: "Acer",
+      value: "Speed",
       description: "",
-      imageUrl: "Acer.jpg",
+      imageUrl: "Speed.jpg",
       voteCount: 0,
     },
     {
       pollOptionId: 2,
-      value: "Lenovo",
+      value: "Keyboard",
       description: "",
-      imageUrl: "Lenovo.jpg",
+      imageUrl: "Keyboard.png",
       voteCount: 0,
     },
     {
       pollOptionId: 3,
-      value: "Mac",
+      value: "Wireless Charging",
       description: "",
-      imageUrl: "Mac.jpg",
+      imageUrl: "Wireless Charging.jpg",
       voteCount: 0,
     },
     {
       pollOptionId: 4,
-      value: "Nova",
+      value: "Graphics",
       description: "",
-      imageUrl: "Nova.png",
+      imageUrl: "Graphics.jpg",
       voteCount: 0,
     }
   ],
