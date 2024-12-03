@@ -21,7 +21,7 @@ const Whiteboard: React.FC<WhiteboardProps> = ({ isHost, roomId}) => {
   const [isDrawing, setIsDrawing] = useState(false);
   const [cursorMode, setCursorMode] = useState(isHost ? "pen" : "pointer"); //for viewers it will always be pointer mode
   const [markerColor, setMarkerColor] = useState("black");
-  const [markerLineWidth, setMarkerLineWidth] = useState(5);
+  const [markerThickness, setMarkerThickness] = useState(5);
 
   useEffect(() => {
     const cleanupWebSocket = WhiteboardConnection({
@@ -38,8 +38,8 @@ const Whiteboard: React.FC<WhiteboardProps> = ({ isHost, roomId}) => {
             stopDrawOnCanvas();
           } else if (action.TYPE === "change_marker_color" && action.COLOR) {
             setMarkerColor(action.COLOR);
-          } else if (action.TYPE === "change_marker_line_width" && action.LINE_WIDTH) {
-            setMarkerLineWidth(action.LINE_WIDTH);
+          } else if (action.TYPE === "change_marker_line_width" && action.THICKNESS) {
+            setMarkerThickness(action.THICKNESS);
           } else if (action.TYPE === "clear_canvas") {
             if (canvasRef.current) {
               contextRef.current.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
@@ -65,7 +65,7 @@ const Whiteboard: React.FC<WhiteboardProps> = ({ isHost, roomId}) => {
             context.scale(2, 2);
             context.lineCap = "round";
             context.strokeStyle = markerColor;
-            context.lineWidth = markerLineWidth;
+            context.lineWidth = markerThickness;
             contextRef.current = context;
         }
     }
@@ -74,9 +74,9 @@ const Whiteboard: React.FC<WhiteboardProps> = ({ isHost, roomId}) => {
   useEffect(() => {
     const context = contextRef.current;
     if (markerColor) context.strokeStyle = markerColor;
-    if (markerLineWidth) context.lineWidth = markerLineWidth;
+    if (markerThickness) context.lineWidth = markerThickness;
 
-  }, [markerColor, markerLineWidth]);
+  }, [markerColor, markerThickness]);
 
   // canvas functions
   const startDrawOnCanvas = (x: number, y: number) => {
@@ -142,12 +142,12 @@ const Whiteboard: React.FC<WhiteboardProps> = ({ isHost, roomId}) => {
   }
 
   const hostChangeMarkerLineWidth = (lineWidth: number) => {
-    if (!isHost || lineWidth === markerLineWidth) return;
-      setMarkerLineWidth(lineWidth);
+    if (!isHost || lineWidth === markerThickness) return;
+      setMarkerThickness(lineWidth);
       sendWhiteboardAction({
         SESSION_ID: roomId ?? "",
         TYPE: "change_marker_line_width",
-        LINE_WIDTH: lineWidth
+        THICKNESS: lineWidth
       });
   }
 
@@ -237,10 +237,10 @@ const Whiteboard: React.FC<WhiteboardProps> = ({ isHost, roomId}) => {
         <Popover>
           <PopoverContent side="top" align="center">
             <div className="bg-gray-800 text-white rounded-lg shadow-lg p-4 flex flex-col items-center justify-center gap-2">
-              <Label htmlFor="line-width">Line Width</Label>
+              <Label htmlFor="line-thickness">Thickness</Label>
                 {lineWidths.map((width, index) => (
                   <div
-                    key={`line-width-${index}`}
+                    key={`line-thickness-${index}`}
                     className={`w-28 h-8 p-1 border-${width}px`}
                     onClick={() => hostChangeMarkerLineWidth(width)}
                   >
@@ -251,7 +251,7 @@ const Whiteboard: React.FC<WhiteboardProps> = ({ isHost, roomId}) => {
                   min="1"
                   max="10"
                   step="1"
-                  value={markerLineWidth}
+                  value={markerThickness}
                   onChange={(e) => hostChangeMarkerLineWidth(Number(e.target.value))}
                   className="flex-1 w-28 h-8 p-1"
                 />
@@ -263,10 +263,10 @@ const Whiteboard: React.FC<WhiteboardProps> = ({ isHost, roomId}) => {
               size="sm"
               className="bg-gray-800 text-white flex items-center justify-center gap-4"
             >
-             <p>Line Width:</p>
+             <p>Thickness:</p>
              <div
-                key={`line-width-selected`}
-                className={`w-14 border-${markerLineWidth}px`}
+                key={`line-thickness-selected`}
+                className={`w-14 border-${markerThickness}px`}
              >
              </div>
             </Button>

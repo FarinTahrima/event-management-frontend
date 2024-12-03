@@ -36,7 +36,7 @@ export interface WhiteboardAction {
   X?: number;
   Y?: number;
   COLOR?: string;
-  LINE_WIDTH?: number;
+  THICKNESS?: number;
 }
 
 export interface InteractiveQAAction {
