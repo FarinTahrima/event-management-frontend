@@ -29,7 +29,7 @@ const EmojiReaction = ({ roomID }: { roomID: string }) => {
     { emoji: "🙂", label: "Smiley Face" },
     { emoji: "😂", label: "Laughing Face" },
     { emoji: "😘", label: "Kissing Face" },
-    { emoji: "😭", label: "Crying Face" },
+    // { emoji: "😭", label: "Crying Face" },
     { emoji: "😮", label: "Shock Face" },
     { emoji: "😱", label: "Scared Face" },
     { emoji: "😡", label: "Angry Face" },
